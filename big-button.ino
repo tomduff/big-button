@@ -124,7 +124,7 @@ int ClockState = 0;            //clock state stuff
 int StepLength = 0;           //What the pot uses for step length
 int steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
 const int clkIn = 2;
-int BigButton = 19;
+int BigButton = 17;
 
 int ButtonClear = 4;         //reset button for the moment
 int ButtonDelete = 7;
@@ -144,7 +144,7 @@ int OUT3 = 10;
 int OUT4 = 11;
 int OUT5 = 12;
 int OUT6 = 13;
-int BankLED = 20;
+int BankLED = 18;
 
 
 
@@ -208,8 +208,6 @@ steps=32;}
 
 
 CHANNELSELECT= analogRead(2);
-
-
 
 digitalWrite(BankLED, HIGH);
 delay(200);
@@ -370,20 +368,16 @@ if((diff > TOLERANCE) && (ChannelSelectState6  == HIGH))
 { NewKnobValue6 = KnobValue;
   OldKnobValue = KnobValue;
   } //lots of the shit with that shift knob!!!! MEMORY STUFF
-   
 
 
-{CHANNELSELECT= analogRead(0);
-if(20>CHANNELSELECT)   {(ChannelSelectState1 = HIGH); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
-if(170<CHANNELSELECT) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = HIGH); (ChannelSelectState3 = LOW); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
-if(240<CHANNELSELECT) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = HIGH); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
-if(420<CHANNELSELECT) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = HIGH);(ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
-if(750<CHANNELSELECT) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = LOW); (ChannelSelectState5 = HIGH); (ChannelSelectState6 = LOW);}
-if(1000<CHANNELSELECT){(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = HIGH);}
-}
+CHANNELSELECT= analogRead(0);
 
-
-
+if (CHANNELSELECT < 150) {(ChannelSelectState1 = HIGH); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
+else if (CHANNELSELECT < 320) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = HIGH); (ChannelSelectState3 = LOW); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
+else if (CHANNELSELECT < 490) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = HIGH); (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
+else if (CHANNELSELECT < 660) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = HIGH);(ChannelSelectState5 = LOW);  (ChannelSelectState6 = LOW);}
+else if (CHANNELSELECT < 830) {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = LOW); (ChannelSelectState5 = HIGH); (ChannelSelectState6 = LOW);}
+else {(ChannelSelectState1 = LOW); (ChannelSelectState2 = LOW); (ChannelSelectState3 = LOW);  (ChannelSelectState4 = LOW); (ChannelSelectState5 = LOW);  (ChannelSelectState6 = HIGH);}
 
 
        if((BankState [1] == LOW) && (ChannelSelectState1  == HIGH))                                  {Channel = 1; BankArrayNumber = 1;  BankArrayShift1 = 0;     BankRecord = 0;  ClearState = 1;}
