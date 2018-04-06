@@ -124,7 +124,7 @@ int ClockState = 0;            //clock state stuff
 int StepLength = 0;           //What the pot uses for step length
 int steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
 const int clkIn = 2;
-int BigButton = 17;
+int BigButton = 19;
 
 int ButtonClear = 4;         //reset button for the moment
 int ButtonDelete = 7;
@@ -249,9 +249,7 @@ void setup()
 void loop()
 {
 
-
-
-  RecordButtonState = digitalRead(BigButton);
+  RecordButtonState = digitalRead(BigButton);  
   DeleteButtonState = digitalRead(ButtonDelete);
   ClearButtonState = digitalRead(ButtonClear);
   ResetButtonState = digitalRead(ResetButton);
@@ -260,7 +258,7 @@ void loop()
 
 
 { if (buttonState == HIGH) {
-
+  
       looper    = (looper + 1);
       BankPush1 = (BankPush1 + 1);
       BankPush2 = (BankPush2 + 1);
@@ -291,7 +289,6 @@ void loop()
       ClockKeep = ClockKeep;
     }
   }
-
 
 
   if (RecordButtonState != LastRecordButtonState) {
@@ -777,12 +774,7 @@ void loop()
 
 //  isr() - quickly handle interrupts from the clock input
 //  ------------------------------------------------------
-void isr()
-{
-
+void isr() {
   buttonState = HIGH;
-
-
 }
-
 
