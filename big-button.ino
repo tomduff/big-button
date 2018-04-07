@@ -34,12 +34,21 @@
 // OUT 6 ... pin 13
 
 #define CLOCK_INTERUPT 0
-#define BANK_INTERUPT 1
+#define BANK_BUTTON_INTERUPT 1
 
 #define TRIGGER 25
 
 #define TOLERANCE 0
+
 #define CHANNELS 6
+
+#define CLOCK 2
+#define BANK_BUTTON 3
+#define CLEAR_BUTTON 4
+#define FILL_BUTTON 5
+#define RESET_BUTTON 5
+#define DELETE_BUTTON 7
+#define BIG_BUTTON 19
 #define CHANNEL1 8
 #define CHANNEL2 9
 #define CHANNEL3 10
@@ -61,18 +70,14 @@ int ClockKeep = 0;
 int ResetSteps = 33;
 
 //RESET BUTTON
-int ResetButton = 6;
-int ResetButtonState = 0;
-int LastResetButtonState = 0;
-
-int ChannelSelect = 0;
+int ResetButtonState = LOW;
+int LastResetButtonState = LOW;
 
 //FILL BUTTON
-int FillButton = 5;
 int FillButtonState = 0;
 byte Fill[6] = {0, 0, 0, 0, 0, 0};
 
-//CLEAR
+//CLEAR_BUTTON
 
 int ClearState = 0;
 
@@ -83,7 +88,6 @@ int PreviousBankButtonState = LOW;
 int BankState[6] = {LOW, LOW, LOW, LOW, LOW, LOW};
 
 int BankClear = 0;
-int ButtonBankSelectButton = 0;
 
 //SHIFT KNOB
 
@@ -91,21 +95,14 @@ int ShiftAmount = 0;
 int BankPush[6] = {0, 0, 0, 0, 0, 0};
 int BankArrayShift[6] = {0, 0, 0, 0, 0, 0};
 int Shift[6] = {0, 0, 0, 0, 0, 0};
-int ShiftSteps = 0;
 int OldShiftAmount = 0;
 
 
 int looper = 0;
-int Channel = 0;
+int channel = 0;
 int ClockState = 0;            //clock state stuff
 int StepLength = 0;           //What the pot uses for step length
 int steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
-const int clkIn = 2;
-int BigButton = 19;
-
-int ButtonClear = 4;         //reset button for the moment
-int ButtonDelete = 7;
-int ButtonBankSelect = 3;
 
 int BankLED = 18;
 int outs[6] = {CHANNEL1, CHANNEL2, CHANNEL3, CHANNEL4, CHANNEL5, CHANNEL6};
@@ -147,13 +144,13 @@ void setup()
   pinMode(CHANNEL6, OUTPUT);
   pinMode(BankLED, OUTPUT);
 
-  pinMode(clkIn, INPUT);
-  pinMode(BigButton, INPUT);
-  pinMode(ButtonDelete, INPUT);
-  pinMode(ButtonClear, INPUT);
-  pinMode(ButtonBankSelect, INPUT);
-  pinMode(ResetButton, INPUT);
-  pinMode(FillButton, INPUT);
+  pinMode(CLOCK, INPUT);
+  pinMode(BIG_BUTTON, INPUT);
+  pinMode(DELETE_BUTTON, INPUT);
+  pinMode(CLEAR_BUTTON, INPUT);
+  pinMode(BANK_BUTTON, INPUT);
+  pinMode(RESET_BUTTON, INPUT);
+  pinMode(FILL_BUTTON, INPUT);
 
   activeChannel();
 
@@ -180,7 +177,7 @@ void setup()
   digitalWrite(BankLED, HIGH);
   delay(60);
   digitalWrite(BankLED, LOW);
-  
+
   attachInterrupt(0, clockInterrupt, RISING);
   attachInterrupt(1, bankInterrupt, CHANGE);
 }
@@ -189,11 +186,11 @@ void setup()
 
 void loop() {
 
-  RecordButtonState = digitalRead(BigButton);
-  DeleteButtonState = digitalRead(ButtonDelete);
-  ClearButtonState = digitalRead(ButtonClear);
-  ResetButtonState = digitalRead(ResetButton);
-  FillButtonState = digitalRead(FillButton);
+  RecordButtonState = digitalRead(BIG_BUTTON);
+  DeleteButtonState = digitalRead(DELETE_BUTTON);
+  ClearButtonState = digitalRead(CLEAR_BUTTON);
+  ResetButtonState = digitalRead(RESET_BUTTON);
+  FillButtonState = digitalRead(FILL_BUTTON);
 
 
   if (clock == HIGH) {
@@ -206,7 +203,7 @@ void loop() {
     }
     clock = LOW;
   } else {
-    if(millis() - time > TRIGGER) {
+    if (millis() - time > TRIGGER) {
       for (int i = 0; i < CHANNELS; ++i) digitalWrite(outs[i], LOW);
     }
     looper = looper;
@@ -215,12 +212,12 @@ void loop() {
 
   //RECORD BUTTON
   if (RecordButtonState != LastRecordButtonState && RecordButtonState == HIGH) {
-    Sequence[Channel + BankArrayShift[Channel]][BankPush[Channel] + 1 + Shift[Channel]] = 1;
+    Sequence[channel + BankArrayShift[channel]][BankPush[channel] + 1 + Shift[channel]] = 1;
   }
 
   //This bit is the clock in and step advance stuff
-  if ((ClockKeep == 1) || (ClockKeep == 5) || (ClockKeep == 9)  || (ClockKeep == 13) ||  (ClockKeep == 17)  || (ClockKeep == 21) || (ClockKeep == 25) || (ClockKeep == 29)) digitalWrite(BankLED, BankArrayShift[Channel] == 0);
-  else digitalWrite(BankLED, BankState[Channel]);
+  if ((ClockKeep == 1) || (ClockKeep == 5) || (ClockKeep == 9)  || (ClockKeep == 13) ||  (ClockKeep == 17)  || (ClockKeep == 21) || (ClockKeep == 25) || (ClockKeep == 29)) digitalWrite(BankLED, BankArrayShift[channel] == 0);
+  else digitalWrite(BankLED, BankState[channel]);
 
 
   // Determine Channel
@@ -229,37 +226,37 @@ void loop() {
   // Determine shift
   shiftAmount();
 
+  // this bit chooses how long the sequence is
+  numberOfSteps();
+
   //lots of the shit with that shift knob
   if (abs(ShiftAmount - OldShiftAmount) > TOLERANCE) {
-    Shift[Channel] = ShiftAmount;
+    Shift[channel] = ShiftAmount;
     OldShiftAmount = ShiftAmount;
   }
 
   // Switch for selecting between both channels and banks
-  BankArrayShift[Channel] = BankState[Channel] == LOW ? 0 : CHANNELS;
+  BankArrayShift[channel] = BankState[channel] == LOW ? 0 : CHANNELS;
 
   //This is the clear button
   if (ClearButtonState == HIGH) {
-    for (int i = 1; i < 42; i++) Sequence[Channel + BankArrayShift[Channel]][i] = 0;
+    for (int i = 1; i < 42; i++) Sequence[channel + BankArrayShift[channel]][i] = 0;
   }
 
-  //This is the FILL button
+  // This is the FILL button
   for (int i = 0; i < CHANNELS; ++i) {
-    if (i == Channel) Fill[i] = FillButtonState;
+    if (i == channel) Fill[i] = FillButtonState;
     else Fill[i] = LOW;
   }
 
   // This is the delete button
-  if (DeleteButtonState == HIGH) Sequence[Channel + BankArrayShift[Channel]][looper + 1] = 0;
+  if (DeleteButtonState == HIGH) Sequence[channel + BankArrayShift[channel]][looper + 1] = 0;
 
   if (ResetButtonState != LastResetButtonState && ResetButtonState == HIGH) {
     looper = 0;
     ClockKeep = 0;
     for (int i = 0; i < CHANNELS; ++i) BankPush[i] = 0;
   }
-
-  // this bit chooses how long the sequence is
-  numberOfSteps();
 
   if (looper >= steps) looper = 0; //this bit starts the sequence over again
   if (ClockKeep >= 32) {
@@ -278,54 +275,54 @@ void loop() {
 }
 
 void activeChannel() {
-  ChannelSelect = analogRead(0);
-  if (ChannelSelect < 150) Channel = 0;
-  else if (ChannelSelect < 320) Channel = 1;
-  else if (ChannelSelect < 490) Channel = 2;
-  else if (ChannelSelect < 660) Channel = 3;
-  else if (ChannelSelect < 830) Channel = 4;
-  else Channel = 5;
+  channel = map(analogRead(0), 0, 1023, 0 , 5);
 }
 
 void numberOfSteps() {
-  StepLength = analogRead(1);
-  if (0 < StepLength) steps = 2;
-  if (200 < StepLength) steps = 4;
-  if (500 < StepLength) steps = 8;
-  if (800 < StepLength) steps = 16;
-  if (1000 < StepLength) steps = 32;
+  steps = 1 << map(analogRead(1), 0, 1023, 1, 5);
+
 }
 
 void shiftAmount() {
-  ShiftSteps = analogRead(2);
-  if (0 < ShiftSteps) ShiftAmount = 0;
-  if (127 < ShiftSteps) ShiftAmount = 1;
-  if (254 < ShiftSteps) ShiftAmount = 2;
-  if (383 < ShiftSteps) ShiftAmount = 3;
-  if (511 < ShiftSteps) ShiftAmount = 4;
-  if (638 < ShiftSteps) ShiftAmount = 5;
-  if (767 < ShiftSteps) ShiftAmount = 6;
-  if (895 < ShiftSteps) ShiftAmount = 7;
-  if (1000 < ShiftSteps) ShiftAmount = 8;
+  ShiftAmount = map(analogRead(2), 0, 1023, 0, steps);
 }
 
 void debug() {
-  for(int i=0; i < CHANNELS; ++i) {
+  for (int i = 0; i < CHANNELS; ++i) {
     digitalWrite(outs[i], HIGH);
     delay(50);
     digitalWrite(outs[i], LOW);
   }
 }
 
+void debugOut(int out) {
+  for (int i = 0; i < 5; ++i) {
+    digitalWrite(outs[out], HIGH);
+    delay(50);
+    digitalWrite(outs[out], LOW);
+    delay(50);
+  }
+}
+
+void debugNumber(int number, int out) {
+  for (int i = 0; i < number; ++i) {
+    digitalWrite(outs[out], HIGH);
+    delay(200);
+    digitalWrite(outs[out], LOW);
+    delay(200);
+  }
+  delay(2000);
+}
+
 void clockInterrupt() {
   clock = HIGH;
 }
 
-void bankInterrupt() {  
-  BankButtonState = digitalRead(ButtonBankSelect);
+void bankInterrupt() {
+  BankButtonState = digitalRead(BANK_BUTTON);
   if (BankButtonState == HIGH && PreviousBankButtonState == LOW) {
-    if (BankState[Channel] == HIGH) BankState[Channel] = LOW;
-    else BankState[Channel] = HIGH;
+    if (BankState[channel] == HIGH) BankState[channel] = LOW;
+    else BankState[channel] = HIGH;
   }
 }
 
