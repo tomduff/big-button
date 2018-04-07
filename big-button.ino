@@ -48,6 +48,7 @@
 #define FILL_BUTTON 5
 #define RESET_BUTTON 5
 #define DELETE_BUTTON 7
+#define BIG_LED 18
 #define BIG_BUTTON 19
 #define CHANNEL1 8
 #define CHANNEL2 9
@@ -56,85 +57,60 @@
 #define CHANNEL5 12
 #define CHANNEL6 13
 
-int buttonPushCounter = 0;   // counter for the number of button presses
-volatile int clock = LOW;         // current state of the button
-int lastButtonState = 0;     // previous state of the button
-int RecordButtonState = 0;
-int LastRecordButtonState = 0;
-int DeleteButtonState = 0;
-int LastDeleteButtonState = 0;
-int ClearButtonState = 0;
+byte buttonPushCounter = 0;   // counter for the number of button presses
+volatile byte clock = LOW;         // current state of the button
+byte lastButtonState = 0;     // previous state of the button
+byte RecordButtonState = 0;
+byte LastRecordButtonState = 0;
+byte DeleteButtonState = 0;
+byte LastDeleteButtonState = 0;
+byte ClearButtonState = 0;
 
 //Clock Reset Keepers
-int ClockKeep = 0;
-int ResetSteps = 33;
+byte ClockKeep = 0;
+byte ResetSteps = 33;
 
 //RESET BUTTON
-int ResetButtonState = LOW;
-int LastResetButtonState = LOW;
+byte ResetButtonState = LOW;
+byte LastResetButtonState = LOW;
 
 //FILL BUTTON
-int FillButtonState = 0;
+byte FillButtonState = 0;
 byte Fill[6] = {0, 0, 0, 0, 0, 0};
 
 //CLEAR_BUTTON
 
-int ClearState = 0;
+byte ClearState = 0;
 
 //Bank Button Latching
 long time = 0;
-int BankButtonState = LOW;
-int PreviousBankButtonState = LOW;
-int BankState[6] = {LOW, LOW, LOW, LOW, LOW, LOW};
+byte BankButtonState = LOW;
+byte PreviousBankButtonState = LOW;
+byte BankState[6] = {LOW, LOW, LOW, LOW, LOW, LOW};
 
-int BankClear = 0;
+byte BankClear = 0;
 
 //SHIFT KNOB
 
-int ShiftAmount = 0;
-int BankPush[6] = {0, 0, 0, 0, 0, 0};
-int BankArrayShift[6] = {0, 0, 0, 0, 0, 0};
-int Shift[6] = {0, 0, 0, 0, 0, 0};
-int OldShiftAmount = 0;
+byte ShiftAmount = 0;
+byte BankPush[6] = {0, 0, 0, 0, 0, 0};
+byte BankArrayShift[6] = {0, 0, 0, 0, 0, 0};
+byte Shift[6] = {0, 0, 0, 0, 0, 0};
+byte OldShiftAmount = 0;
 
 
-int looper = 0;
-int channel = 0;
-int ClockState = 0;            //clock state stuff
-int StepLength = 0;           //What the pot uses for step length
-int steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
+byte looper = 0;
+byte channel = 0;
+byte ClockState = 0;            //clock state stuff
+byte StepLength = 0;           //What the pot uses for step length
+byte steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
 
-int BankLED = 18;
-int outs[6] = {CHANNEL1, CHANNEL2, CHANNEL3, CHANNEL4, CHANNEL5, CHANNEL6};
+byte outs[6] = {CHANNEL1, CHANNEL2, CHANNEL3, CHANNEL4, CHANNEL5, CHANNEL6};
 
+byte Sequence[12][64] = {};
 
-
-int Sequence[14][43] = {
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,},
-
-
-  //sequence array 1
-
-};//sequence array 1
-
-
-
-
-void setup()
-{
+void setup() {
+  memset(Sequence,0,sizeof(Sequence));
 
   pinMode(CHANNEL1, OUTPUT);
   pinMode(CHANNEL2, OUTPUT);
@@ -142,7 +118,7 @@ void setup()
   pinMode(CHANNEL4, OUTPUT);
   pinMode(CHANNEL5, OUTPUT);
   pinMode(CHANNEL6, OUTPUT);
-  pinMode(BankLED, OUTPUT);
+  pinMode(BIG_LED, OUTPUT);
 
   pinMode(CLOCK, INPUT);
   pinMode(BIG_BUTTON, INPUT);
@@ -154,29 +130,29 @@ void setup()
 
   activeChannel();
 
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(200);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
   delay(180);
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(160);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
   delay(140);
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(120);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
   delay(100);
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(80);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
   delay(60);
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(40);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
   delay(20);
-  digitalWrite(BankLED, HIGH);
+  digitalWrite(BIG_LED, HIGH);
   delay(60);
-  digitalWrite(BankLED, LOW);
+  digitalWrite(BIG_LED, LOW);
 
   attachInterrupt(0, clockInterrupt, RISING);
   attachInterrupt(1, bankInterrupt, CHANGE);
@@ -216,8 +192,8 @@ void loop() {
   }
 
   //This bit is the clock in and step advance stuff
-  if ((ClockKeep == 1) || (ClockKeep == 5) || (ClockKeep == 9)  || (ClockKeep == 13) ||  (ClockKeep == 17)  || (ClockKeep == 21) || (ClockKeep == 25) || (ClockKeep == 29)) digitalWrite(BankLED, BankArrayShift[channel] == 0);
-  else digitalWrite(BankLED, BankState[channel]);
+  if ((ClockKeep == 1) || (ClockKeep == 5) || (ClockKeep == 9)  || (ClockKeep == 13) ||  (ClockKeep == 17)  || (ClockKeep == 21) || (ClockKeep == 25) || (ClockKeep == 29)) digitalWrite(BIG_LED, BankArrayShift[channel] == 0);
+  else digitalWrite(BIG_LED, BankState[channel]);
 
 
   // Determine Channel
