@@ -33,6 +33,12 @@
 // OUT 5 ... pin 12
 // OUT 6 ... pin 13
 
+#include "Input.h"
+#include "Output.h"
+#include "Button.h"
+#include "Shuffle.h"
+#include "Track.h"
+
 #define CLOCK_INTERUPT 0
 #define BANK_BUTTON_INTERUPT 1
 
@@ -40,22 +46,23 @@
 
 #define TOLERANCE 0
 
-#define CHANNELS 6
+#define TRACKS 6
 
 #define CLOCK 2
 #define BANK_BUTTON 3
 #define CLEAR_BUTTON 4
 #define FILL_BUTTON 5
-#define RESET_BUTTON 5
+#define RESET_BUTTON 6
 #define DELETE_BUTTON 7
-#define BIG_LED 18
 #define BIG_BUTTON 19
-#define CHANNEL1 8
-#define CHANNEL2 9
-#define CHANNEL3 10
-#define CHANNEL4 11
-#define CHANNEL5 12
-#define CHANNEL6 13
+
+#define BIG_LED 18
+#define TRACK1 8
+#define TRACK2 9
+#define TRACK3 10
+#define TRACK4 11
+#define TRACK5 12
+#define TRACK6 13
 
 byte buttonPushCounter = 0;   // counter for the number of button presses
 volatile byte clock = LOW;         // current state of the button
@@ -102,28 +109,31 @@ byte ClockState = 0;            //clock state stuff
 byte StepLength = 0;           //What the pot uses for step length
 byte steps = 0;              //beginning number of the steps in the sequence adjusted by StepLength
 
-byte outs[6] = {CHANNEL1, CHANNEL2, CHANNEL3, CHANNEL4, CHANNEL5, CHANNEL6};
+//byte outs[TRACKS] = {TRACK1, TRACK2, TRACK3, TRACK4, TRACK5, TRACK6};
 
 byte sequence[12][64] = {};
 
+Shuffle shuffle = Shuffle();
+Input clockInput = Input(CLOCK);
+Button bankButton = Button(BANK_BUTTON, false);
+Button clearButton = Button(CLEAR_BUTTON, false);
+Button fillButton = Button(FILL_BUTTON, false);
+Button resetButton = Button(RESET_BUTTON, false);
+Button deleteButton = Button(DELETE_BUTTON, false);
+Button recordButton = Button(BIG_BUTTON, false);
+Output outs[TRACKS] = {Output(TRACK1), Output(TRACK2), Output(TRACK3), Output(TRACK4), Output(TRACK5), Output(TRACK6)};
+Track track[TRACKS] = {Track(), Track(), Track(), Track(), Track(), Track()};
+
 void setup() {
-  memset(sequence,0,sizeof(sequence));
+  memset(sequence, 0, sizeof(sequence));
 
-  pinMode(CHANNEL1, OUTPUT);
-  pinMode(CHANNEL2, OUTPUT);
-  pinMode(CHANNEL3, OUTPUT);
-  pinMode(CHANNEL4, OUTPUT);
-  pinMode(CHANNEL5, OUTPUT);
-  pinMode(CHANNEL6, OUTPUT);
+  pinMode(TRACK1, OUTPUT);
+  pinMode(TRACK2, OUTPUT);
+  pinMode(TRACK3, OUTPUT);
+  pinMode(TRACK4, OUTPUT);
+  pinMode(TRACK5, OUTPUT);
+  pinMode(TRACK6, OUTPUT);
   pinMode(BIG_LED, OUTPUT);
-
-  pinMode(CLOCK, INPUT);
-  pinMode(BIG_BUTTON, INPUT);
-  pinMode(DELETE_BUTTON, INPUT);
-  pinMode(CLEAR_BUTTON, INPUT);
-  pinMode(BANK_BUTTON, INPUT);
-  pinMode(RESET_BUTTON, INPUT);
-  pinMode(FILL_BUTTON, INPUT);
 
   activeChannel();
 
@@ -134,43 +144,69 @@ void setup() {
 }
 
 
+void handleClock(Signal signal) {
+  shuffle.clock(signal);
+  // if (signal == Signal::Rising) tracks.stepOn();
+  // if (signal == Signal::Low && (now - lastClock) > CLOCK_WAIT) {
+  //   clocked = false;
+  //   lastClock = 0;
+  // } else if (signal == Signal::Rising || signal == Signal::High) {
+  //   clocked = true;
+  //   lastClock = now;
+  // }
+
+  for (int index = 0; index < TRACKS; ++index) {
+    if (signal == Signal::Rising) track[index].stepOn();
+    handleStep(index);
+  }
+}
+
+void handleStep(int index) {
+  int step = track[index].getStep();
+  Signal signal = shuffle.tick(track, track[index].getShuffle());
+  if (!track[index].getStepped() && Signal::Rising) signal = Signal::Low;
+  int output = outs[index].signal(signal, track[index].getOutMode(), step);
+}
+
 void loop() {
 
-  RecordButtonState = digitalRead(BIG_BUTTON);
-  DeleteButtonState = digitalRead(DELETE_BUTTON);
-  ClearButtonState = digitalRead(CLEAR_BUTTON);
-  ResetButtonState = digitalRead(RESET_BUTTON);
-  FillButtonState = digitalRead(FILL_BUTTON);
-  
+  RecordButtonState = recordButton.event() != ButtonState::Released;
+  DeleteButtonState = deleteButton.event() != ButtonState::Released;
+  ClearButtonState = clearButton.event() != ButtonState::Released;
+  ResetButtonState = resetButton.event() != ButtonState::Released;
+  FillButtonState = fillButton.event() != ButtonState::Released;
+  BankButtonState = bankButton.event() != ButtonState::Released;
+
   activeChannel();
   shiftAmount();
   numberOfSteps();
-  
+
   Shift[channel] = ShiftAmount;
-  BankArrayShift[channel] = BankState[channel] == LOW ? 0 : CHANNELS;
+  BankArrayShift[channel] = BankState[channel] == LOW ? 0 : TRACKS;
   if (ResetButtonState != LastResetButtonState && ResetButtonState == HIGH) next = 0;
   if (DeleteButtonState == HIGH) sequence[channel + BankArrayShift[channel]][next] = 0;
   if (RecordButtonState != LastRecordButtonState && RecordButtonState == HIGH) sequence[channel + BankArrayShift[channel]][next + Shift[channel]] = 1;
+  if (BankButtonState == HIGH && PreviousBankButtonState == LOW) BankState[channel] = !BankState[channel];
 
   if (clock == HIGH) {
-    
+
     time = millis();
-    
+
     current = next;
     ++next;
     if (next >= steps) next = 0;
-    
+
     if (current % 16 == 0) digitalWrite(BIG_LED, BankArrayShift[channel] == 0);
     else digitalWrite(BIG_LED, BankState[channel]);
-    
-    for (int i = 0; i < CHANNELS; ++i) {
-      digitalWrite(outs[i], sequence[i + BankArrayShift[i]][current + Shift[i]] || (i == channel) && FillButtonState);
+
+    for (int i = 0; i < TRACKS; ++i) {
+      //digitalWrite(outs[i], sequence[i + BankArrayShift[i]][current + Shift[i]] || (i == channel) && FillButtonState);
     }
-    
+
     clock = LOW;
   } else {
     if (millis() - time > TRIGGER) {
-      for (int i = 0; i < CHANNELS; ++i) digitalWrite(outs[i], LOW);
+   //   for (int i = 0; i < TRACKS; ++i) digitalWrite(outs[i], LOW);
     }
   }
 
@@ -202,32 +238,32 @@ void shiftAmount() {
   ShiftAmount = map(analogRead(2), 0, 1023, 0, steps);
 }
 
-void debug() {
-  for (int i = 0; i < CHANNELS; ++i) {
-    digitalWrite(outs[i], HIGH);
-    delay(50);
-    digitalWrite(outs[i], LOW);
-  }
-}
-
-void debugOut(int out) {
-  for (int i = 0; i < 5; ++i) {
-    digitalWrite(outs[out], HIGH);
-    delay(50);
-    digitalWrite(outs[out], LOW);
-    delay(50);
-  }
-}
-
-void debugNumber(int number, int out) {
-  for (int i = 0; i < number; ++i) {
-    digitalWrite(outs[out], HIGH);
-    delay(200);
-    digitalWrite(outs[out], LOW);
-    delay(200);
-  }
-  delay(2000);
-}
+//void debug() {
+//  for (int i = 0; i < TRACKS; ++i) {
+//    digitalWrite(outs[i], HIGH);
+//    delay(50);
+//    digitalWrite(outs[i], LOW);
+//  }
+//}
+//
+//void debugOut(int out) {
+//  for (int i = 0; i < 5; ++i) {
+//    digitalWrite(outs[out], HIGH);
+//    delay(50);
+//    digitalWrite(outs[out], LOW);
+//    delay(50);
+//  }
+//}
+//
+//void debugNumber(int number, int out) {
+//  for (int i = 0; i < number; ++i) {
+//    digitalWrite(outs[out], HIGH);
+//    delay(200);
+//    digitalWrite(outs[out], LOW);
+//    delay(200);
+//  }
+//  delay(2000);
+//}
 
 void clockInterrupt() {
   clock = HIGH;
@@ -235,10 +271,6 @@ void clockInterrupt() {
 
 void bankInterrupt() {
   BankButtonState = digitalRead(BANK_BUTTON);
-  if (BankButtonState == HIGH && PreviousBankButtonState == LOW) {
-    if (BankState[channel] == HIGH) BankState[channel] = LOW;
-    else BankState[channel] = HIGH;
-  }
 }
 
 
