@@ -66,9 +66,6 @@ byte DeleteButtonState = 0;
 byte LastDeleteButtonState = 0;
 byte ClearButtonState = 0;
 
-//Clock Reset Keepers
-byte ClockKeep = 0;
-byte ResetSteps = 33;
 
 //RESET BUTTON
 byte ResetButtonState = LOW;
@@ -76,7 +73,6 @@ byte LastResetButtonState = LOW;
 
 //FILL BUTTON
 byte FillButtonState = 0;
-byte Fill[6] = {0, 0, 0, 0, 0, 0};
 
 //CLEAR_BUTTON
 
@@ -93,13 +89,14 @@ byte BankClear = 0;
 //SHIFT KNOB
 
 byte ShiftAmount = 0;
-byte BankPush[6] = {0, 0, 0, 0, 0, 0};
 byte BankArrayShift[6] = {0, 0, 0, 0, 0, 0};
 byte Shift[6] = {0, 0, 0, 0, 0, 0};
 byte OldShiftAmount = 0;
 
 
-byte looper = 0;
+byte current = 0;
+byte next = 1;
+
 byte channel = 0;
 byte ClockState = 0;            //clock state stuff
 byte StepLength = 0;           //What the pot uses for step length
@@ -107,10 +104,10 @@ byte steps = 0;              //beginning number of the steps in the sequence adj
 
 byte outs[6] = {CHANNEL1, CHANNEL2, CHANNEL3, CHANNEL4, CHANNEL5, CHANNEL6};
 
-byte Sequence[12][64] = {};
+byte sequence[12][64] = {};
 
 void setup() {
-  memset(Sequence,0,sizeof(Sequence));
+  memset(sequence,0,sizeof(sequence));
 
   pinMode(CHANNEL1, OUTPUT);
   pinMode(CHANNEL2, OUTPUT);
@@ -130,34 +127,11 @@ void setup() {
 
   activeChannel();
 
-  digitalWrite(BIG_LED, HIGH);
-  delay(200);
-  digitalWrite(BIG_LED, LOW);
-  delay(180);
-  digitalWrite(BIG_LED, HIGH);
-  delay(160);
-  digitalWrite(BIG_LED, LOW);
-  delay(140);
-  digitalWrite(BIG_LED, HIGH);
-  delay(120);
-  digitalWrite(BIG_LED, LOW);
-  delay(100);
-  digitalWrite(BIG_LED, HIGH);
-  delay(80);
-  digitalWrite(BIG_LED, LOW);
-  delay(60);
-  digitalWrite(BIG_LED, HIGH);
-  delay(40);
-  digitalWrite(BIG_LED, LOW);
-  delay(20);
-  digitalWrite(BIG_LED, HIGH);
-  delay(60);
-  digitalWrite(BIG_LED, LOW);
+  startUp();
 
   attachInterrupt(0, clockInterrupt, RISING);
   attachInterrupt(1, bankInterrupt, CHANGE);
 }
-
 
 
 void loop() {
@@ -167,86 +141,52 @@ void loop() {
   ClearButtonState = digitalRead(CLEAR_BUTTON);
   ResetButtonState = digitalRead(RESET_BUTTON);
   FillButtonState = digitalRead(FILL_BUTTON);
-
+  
+  activeChannel();
+  shiftAmount();
+  numberOfSteps();
+  
+  Shift[channel] = ShiftAmount;
+  BankArrayShift[channel] = BankState[channel] == LOW ? 0 : CHANNELS;
+  if (ResetButtonState != LastResetButtonState && ResetButtonState == HIGH) next = 0;
+  if (DeleteButtonState == HIGH) sequence[channel + BankArrayShift[channel]][next] = 0;
+  if (RecordButtonState != LastRecordButtonState && RecordButtonState == HIGH) sequence[channel + BankArrayShift[channel]][next + Shift[channel]] = 1;
 
   if (clock == HIGH) {
+    
     time = millis();
-    ++looper;
-    ++ClockKeep;
+    
+    current = next;
+    ++next;
+    if (next >= steps) next = 0;
+    
+    if (current % 16 == 0) digitalWrite(BIG_LED, BankArrayShift[channel] == 0);
+    else digitalWrite(BIG_LED, BankState[channel]);
+    
     for (int i = 0; i < CHANNELS; ++i) {
-      BankPush[i] = BankPush[i] + 1;
-      digitalWrite(outs[i], Sequence[i + BankArrayShift[i]][BankPush[i] + Shift[i]] || (Fill[i]));
+      digitalWrite(outs[i], sequence[i + BankArrayShift[i]][current + Shift[i]] || (i == channel) && FillButtonState);
     }
+    
     clock = LOW;
   } else {
     if (millis() - time > TRIGGER) {
       for (int i = 0; i < CHANNELS; ++i) digitalWrite(outs[i], LOW);
     }
-    looper = looper;
-    ClockKeep = ClockKeep;
   }
 
-  //RECORD BUTTON
-  if (RecordButtonState != LastRecordButtonState && RecordButtonState == HIGH) {
-    Sequence[channel + BankArrayShift[channel]][BankPush[channel] + 1 + Shift[channel]] = 1;
-  }
 
-  //This bit is the clock in and step advance stuff
-  if ((ClockKeep == 1) || (ClockKeep == 5) || (ClockKeep == 9)  || (ClockKeep == 13) ||  (ClockKeep == 17)  || (ClockKeep == 21) || (ClockKeep == 25) || (ClockKeep == 29)) digitalWrite(BIG_LED, BankArrayShift[channel] == 0);
-  else digitalWrite(BIG_LED, BankState[channel]);
-
-
-  // Determine Channel
-  activeChannel();
-
-  // Determine shift
-  shiftAmount();
-
-  // this bit chooses how long the sequence is
-  numberOfSteps();
-
-  //lots of the shit with that shift knob
-  if (abs(ShiftAmount - OldShiftAmount) > TOLERANCE) {
-    Shift[channel] = ShiftAmount;
-    OldShiftAmount = ShiftAmount;
-  }
-
-  // Switch for selecting between both channels and banks
-  BankArrayShift[channel] = BankState[channel] == LOW ? 0 : CHANNELS;
 
   //This is the clear button
   if (ClearButtonState == HIGH) {
-    for (int i = 1; i < 42; i++) Sequence[channel + BankArrayShift[channel]][i] = 0;
-  }
-
-  // This is the FILL button
-  for (int i = 0; i < CHANNELS; ++i) {
-    if (i == channel) Fill[i] = FillButtonState;
-    else Fill[i] = LOW;
+    for (int i = 0; i < 64; i++) sequence[channel + BankArrayShift[channel]][i] = 0;
   }
 
   // This is the delete button
-  if (DeleteButtonState == HIGH) Sequence[channel + BankArrayShift[channel]][looper + 1] = 0;
 
-  if (ResetButtonState != LastResetButtonState && ResetButtonState == HIGH) {
-    looper = 0;
-    ClockKeep = 0;
-    for (int i = 0; i < CHANNELS; ++i) BankPush[i] = 0;
-  }
-
-  if (looper >= steps) looper = 0; //this bit starts the sequence over again
-  if (ClockKeep >= 32) {
-    looper = 0;
-    ClockKeep = 0;
-  }
-
-  for (int i = 0; i < CHANNELS; ++i) {
-    if ((BankPush[i]  + Shift[i]) >= steps) BankPush[i] = 0;
-  }
 
   lastButtonState = clock;
   LastRecordButtonState = RecordButtonState;
-  LastResetButtonState = ResetButtonState;//section is for the state change detections
+  LastResetButtonState = ResetButtonState;
   PreviousBankButtonState = BankButtonState;
 }
 
@@ -255,8 +195,7 @@ void activeChannel() {
 }
 
 void numberOfSteps() {
-  steps = 1 << map(analogRead(1), 0, 1023, 1, 5);
-
+  steps = 1 << map(analogRead(1), 0, 1023, 2, 6);
 }
 
 void shiftAmount() {
@@ -300,5 +239,32 @@ void bankInterrupt() {
     if (BankState[channel] == HIGH) BankState[channel] = LOW;
     else BankState[channel] = HIGH;
   }
+}
+
+
+void startUp() {
+  digitalWrite(BIG_LED, HIGH);
+  delay(100);
+  digitalWrite(BIG_LED, LOW);
+  delay(20);
+  digitalWrite(BIG_LED, HIGH);
+  delay(80);
+  digitalWrite(BIG_LED, LOW);
+  delay(20);
+  digitalWrite(BIG_LED, HIGH);
+  delay(60);
+  digitalWrite(BIG_LED, LOW);
+  delay(20);
+  digitalWrite(BIG_LED, HIGH);
+  delay(40);
+  digitalWrite(BIG_LED, LOW);
+  delay(20);
+  digitalWrite(BIG_LED, HIGH);
+  delay(20);
+  digitalWrite(BIG_LED, LOW);
+  delay(10);
+  digitalWrite(BIG_LED, HIGH);
+  delay(20);
+  digitalWrite(BIG_LED, LOW);
 }
 
