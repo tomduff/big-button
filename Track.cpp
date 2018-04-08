@@ -5,32 +5,57 @@
 
 #define CONFIG_VERSION 105
 #define CONFIG_ADDRESS 0
-#define MAX_STEP_INDEX 15
+#define MAX_STEP_INDEX 31
 #define MAX_BEAT_DIVIDER 6
 #define MAX_TRIPLET_DIVIDER 7
-#define MAX_SHUFFLE MAX_STEP_INDEX
+#define MAX_SHUFFLE 15
 #define MAX_MUTATION 37
 #define MUTATION_FACTOR 100
 
 Track::Track() {
- // load();
-  reset();
 }
 
-void Track::updatePattern(int position) {
+void Track::initialise() {
+ // load();
+}
+
+void Track::reset() {
+  state.position = 0;
+}
+
+void Track::clear() {
+  initialiseTrack();
+  initialiseState();
+  change = true;
+}
+
+void Track::clearPattern() {
+  track.pattern = 0;
+  resetPattern();
+  change = true;
+}
+
+void Track::setPattern(byte value) {
+  int step = track.start + state.position;
+  bitWrite(track.pattern, step, value);
+  resetPattern();
+  change = true;
+}
+
+void Track::updatePattern(byte position) {
   int step = track.start + position;
   bitWrite(track.pattern, step, !bitRead(track.pattern, step));
   resetPattern();
   change = true;
 }
 
-void Track::rotatePattern(int offset) {
+void Track::rotatePattern(byte offset) {
   rotate(track.pattern, track.start, track.end, offset);
   resetPattern();
   change = true;
 }
 
-void Track::setStart(int offset) {
+void Track::setStart(byte offset) {
   track.start += offset;
   Utilities::bound(track.start, 0, track.end);
   resetLength();
@@ -38,7 +63,7 @@ void Track::setStart(int offset) {
   change = true;
 }
 
-void Track::setEnd(int offset) {
+void Track::setEnd(byte offset) {
   track.end += offset;
   Utilities::bound(track.end, track.start, MAX_STEP_INDEX);
   resetLength();
@@ -46,7 +71,7 @@ void Track::setEnd(int offset) {
   change = true;
 }
 
-void Track::setLength(int offset) {
+void Track::setLength(byte offset) {
   track.length += offset;
   Utilities::bound(track.length, 0, MAX_STEP_INDEX);
   Utilities::bound(track.offset, 0, track.length);
@@ -56,14 +81,14 @@ void Track::setLength(int offset) {
   change = true;
 }
 
-void Track::setDensity(int offset) {
+void Track::setDensity(byte offset) {
   track.density += offset;
   Utilities::bound(track.density, 0, track.length);
   resetPattern();
   change = true;
 }
 
-void Track::setOffset(int offset) {
+void Track::setOffset(byte offset) {
   track.offset += offset;
   Utilities::cycle(track.offset, 0, track.length);
   resetPattern();
@@ -71,7 +96,7 @@ void Track::setOffset(int offset) {
 }
 
 void Track::nextPatternType() {
-  int mode = (int)track.patternType;
+  byte mode = (byte)track.patternType;
   ++mode;
   Utilities::cycle(mode, PatternType::Programmed, PatternType::Euclidean);
   track.patternType = (PatternType) mode;
@@ -80,8 +105,8 @@ void Track::nextPatternType() {
   change = true;
 }
 
-void Track::setPlayMode(int offset) {
-  int mode = (int) track.play;
+void Track::setPlayMode(byte offset) {
+  byte mode = (byte) track.play;
   mode += offset;
   Utilities::cycle(mode, PlayMode::Forward, PlayMode::Random);
   track.play = (PlayMode) mode;
@@ -89,15 +114,15 @@ void Track::setPlayMode(int offset) {
   change = true;
 }
 
-void Track::setOutMode(int offset) {
-  int mode = (int) track.out;
+void Track::setOutMode(byte offset) {
+  byte mode = (byte) track.out;
   mode += offset;
   Utilities::cycle(mode, OutMode::Trigger, OutMode::Gate);
   track.out = (OutMode) mode;
   change = true;
 }
 
-void Track::setDivider(int offset) {
+void Track::setDivider(byte offset) {
   track.divider += offset;
   Utilities::bound(track.divider, 0, track.dividerType == DividerType::Beat ? MAX_BEAT_DIVIDER : MAX_TRIPLET_DIVIDER);
   resetDivision();
@@ -105,7 +130,7 @@ void Track::setDivider(int offset) {
 }
 
 void Track::nextDividerType() {
-  int mode = (int)track.dividerType;
+  byte mode = (byte)track.dividerType;
   ++mode;
   Utilities::cycle(mode, DividerType::Beat, DividerType::Triplet);
   track.dividerType = (DividerType) mode;
@@ -113,43 +138,47 @@ void Track::nextDividerType() {
   change = true;
 }
 
-void Track::setShuffle(int offset) {
+void Track::setShuffle(byte offset) {
   track.shuffle += offset;
   Utilities::bound(track.shuffle, 0, MAX_SHUFFLE);
   change = true;
 }
 
-void Track::setMutation(int offset) {
+void Track::setMutation(byte offset) {
   track.mutation += offset;
   Utilities::bound(track.mutation, 0, MAX_MUTATION);
   change = true;
 }
 
 void Track::nextMutationSeed() {
-  int mode = (int)track.mutationSeed;
+  byte mode = (byte)track.mutationSeed;
   ++mode;
   Utilities::cycle(mode, MutationSeed::Original, MutationSeed::LastInverted);
   track.mutationSeed = (MutationSeed) mode;
   change = true;
 }
 
-int Track::getStart() {
+void Track::setFill(bool fill) {
+  state.fill = fill;
+}
+
+byte Track::getStart() {
   return track.start;
 }
 
-int Track::getEnd() {
+byte Track::getEnd() {
   return track.end;
 }
 
-int Track::getLength() {
+byte Track::getLength() {
   return state.length;
 }
 
-int Track::getPattern() {
+byte Track::getPattern() {
   return state.pattern;
 }
 
-int Track::getDivider() {
+byte Track::getDivider() {
   return track.divider;
 }
 
@@ -157,12 +186,12 @@ DividerType Track::getDividerType() {
   return track.dividerType;
 }
 
-int Track::getPosition() {
+byte Track::getPosition() {
   return state.position;
 }
 
-int Track::getStep() {
-  return bitRead(state.pattern, state.position);
+byte Track::getStep() {
+  return state.fill ? HIGH : bitRead(state.pattern, state.position);
 }
 
 PatternType Track::getPatternType() {
@@ -177,24 +206,20 @@ OutMode Track::getOutMode() {
   return track.out;
 }
 
-int Track::getShuffle() {
+byte Track::getShuffle() {
   return track.shuffle;
 }
 
-int Track::getStepped() {
+byte Track::getStepped() {
   return state.stepped;
 }
 
-int Track::getMutation() {
+byte Track::getMutation() {
   return track.mutation;
 }
 
 MutationSeed Track::getMutationSeed(){
   return track.mutationSeed;
-}
-
-void Track::reset() {
-  initialiseState();
 }
 
 void Track::stepOn() {
@@ -231,7 +256,7 @@ void Track::stepPosition() {
 }
 
 void Track::mutate() {
-  int seed;
+  long seed;
   switch(track.mutationSeed) {
     case MutationSeed::Original:
       resetPattern();
@@ -343,8 +368,8 @@ int Track::calculateDivision(int divider, DividerType type) {
   return division;
 }
 
-int Track::euclidean(int length, int density) {
-  int euclidean = 0;
+long Track::euclidean(byte length, byte density) {
+  long euclidean = 0;
   if(density >= length) density = length;
   int level = 0;
   int divisor = length - density;
@@ -383,7 +408,7 @@ void Track::build(int pattern[], int &step, int level, int counts[], int remaind
   }
 }
 
-void Track::rotate(int &pattern, int start, int end, int offset) {
+void Track::rotate(long &pattern, int start, int end, int offset) {
   int original = pattern;
   int length = end - start;
   for(int index = start; index <= end; ++index) {

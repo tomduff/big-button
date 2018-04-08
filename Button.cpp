@@ -3,34 +3,49 @@
 #define HOLD_TIME 100
 
 Button::Button(byte io, bool holdable)
-  : pin(io), canHold(holdable), holdStart(0), oldState(ButtonState::Released) {
-   pinMode(pin, INPUT);
+  : pin(io), canHold(holdable), holdStart(0), oldState(ButtonState::Released), event{false, ButtonState::Released} {
 }
 
-ButtonState Button::event() {
-  return canHold ? holdState() : readState();
+void Button::initialise() {
+  pinMode(pin, INPUT);
 }
 
-ButtonState Button::holdState() {
-  ButtonState event = ButtonState::Released;
-  ButtonState state = readState();
-  if (state == ButtonState::Released) {
-    if (oldState == ButtonState::Clicked) {
-      event = ButtonState::Clicked;
-      holdStart = 0;
+void Button::read() {
+  byte newState =  digitalRead(pin);
+  ButtonState eventState = ButtonState::Released;
+
+  if (canHold) {
+    if (!newState) {
+      if (oldState) {
+        eventState = ButtonState::Clicked;
+        holdStart = 0;
+      }
+    } else {
+      if (!oldState) holdStart = millis();
+      else if (holdStart != 0 && millis() - holdStart > HOLD_TIME) eventState = ButtonState::Held;
     }
   } else {
-    if (oldState == ButtonState::Released) holdStart = millis();
-    else if (isHeld()) event = ButtonState::Held;
+    eventState = newState ? ButtonState::Clicked : ButtonState::Released;
   }
 
-  return event;
+  event.changed = event.state != eventState;
+  event.state = eventState;
+  oldState = newState;
 }
 
-ButtonState Button::readState() {
-  return digitalRead(pin) ? ButtonState::Clicked : ButtonState::Released;
+bool Button::isChanged() {
+  return event.changed;
+}
+
+bool Button::isReleased() {
+  return event.state == ButtonState::Released;
+}
+
+bool Button::isClicked() {
+  return canHold && event.state == ButtonState::Clicked;
 }
 
 bool Button::isHeld() {
-  return (holdStart != 0 && millis() - holdStart > HOLD_TIME);
+  return event.state == ButtonState::Held;
 }
+

@@ -9,18 +9,26 @@ enum ButtonState {
   Held = 2
 };
 
+struct ButtonEvent {
+  bool changed;
+  ButtonState state;
+};
+
 class Button {
 public:
   Button(byte io, bool hold);
-  ButtonState event();
+  void initialise();
+  void read();
+  bool isChanged();
+  bool isReleased();
+  bool isClicked();
   bool isHeld();
 private:
   byte pin;
   bool canHold;
   unsigned long holdStart;
   ButtonState oldState;
-  ButtonState readState();
-  ButtonState holdState();
+  ButtonEvent event;
 };
 
 #endif

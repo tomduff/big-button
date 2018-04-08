@@ -1,6 +1,7 @@
 #ifndef Shuffle_h_
 #define Shuffle_h_
 
+#include <Arduino.h>
 #include "Shuffle.h"
 #include "Io.h"
 
@@ -19,7 +20,7 @@ public:
   void reset();
 private:
   unsigned long gate;
-  int beat;
+  byte beat;
   ShuffleState state;
   Signal shuffleClock(int track, int shuffle);
   void newCycle();
