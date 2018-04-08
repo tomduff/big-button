@@ -24,7 +24,7 @@ Signal Input::signal() {
 		case High:
 	  case Rising:
 			if(reading) current = Signal::High;
-		  else if(reading) current = Signal::Falling;
+		  else current = Signal::Falling;
 		  break;
 
 	}

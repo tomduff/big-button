@@ -8,8 +8,8 @@
 struct ShuffleState {
   unsigned long lastClock;
   Signal clockSignal;
-  Signal shuffleSignal[4];
-  bool newCycle[4];
+  Signal shuffleSignal[6];
+  bool newCycle[6];
 };
 
 class Shuffle {

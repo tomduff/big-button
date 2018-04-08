@@ -16,11 +16,12 @@ Track::Track() {
 }
 
 void Track::initialise() {
- // load();
+  // load();
+  clear();
 }
 
 void Track::reset() {
-  state.position = 0;
+  initialiseState();
 }
 
 void Track::clear() {
@@ -218,7 +219,7 @@ byte Track::getMutation() {
   return track.mutation;
 }
 
-MutationSeed Track::getMutationSeed(){
+MutationSeed Track::getMutationSeed() {
   return track.mutationSeed;
 }
 
@@ -234,30 +235,30 @@ void Track::stepOn() {
 }
 
 void Track::stepPosition() {
-  switch(track.play) {
+  switch (track.play) {
     case Forward:
       ++state.position;
       Utilities::cycle(state.position, 0, state.length);
-    break;
+      break;
     case Backward:
       --state.position;
       Utilities::cycle(state.position, 0, state.length);
-    break;
+      break;
     case Random:
       state.position = random(0, state.length + 1);
-    break;
+      break;
     case Pendulum:
       if (state.forward) ++state.position;
       else --state.position;
       if (Utilities::reverse(state.position, 0, state.length)) state.forward  = !state.forward ;
-    break;
+      break;
   }
-  if(state.position == 0) mutate();
+  if (state.position == 0) mutate();
 }
 
 void Track::mutate() {
   long seed;
-  switch(track.mutationSeed) {
+  switch (track.mutationSeed) {
     case MutationSeed::Original:
       resetPattern();
       seed = state.pattern;
@@ -273,7 +274,7 @@ void Track::mutate() {
 
   for (int index = 0; index <= state.length; ++index) {
     bool step = bitRead(seed, index);
-    if (random(1, MUTATION_FACTOR) <= pow(track.mutation,2)) step = !step;
+    if (random(1, MUTATION_FACTOR) <= pow(track.mutation, 2)) step = !step;
     bitWrite(state.pattern, index, step);
   }
 }
@@ -313,13 +314,14 @@ void Track::initialiseState() {
   state.beat = 0;
   state.forward = true;
   state.stepped = false;
+  state.fill = false;
   resetLength();
   resetDivision();
   resetPattern();
 }
 
 void Track::resetLength() {
-  switch(track.patternType) {
+  switch (track.patternType) {
     case Programmed:
       state.length = track.end - track.start;
       break;
@@ -330,7 +332,7 @@ void Track::resetLength() {
 }
 
 void Track::resetPattern() {
-  switch(track.patternType) {
+  switch (track.patternType) {
     case Programmed:
       resetProgrammed();
       break;
@@ -370,7 +372,7 @@ int Track::calculateDivision(int divider, DividerType type) {
 
 long Track::euclidean(byte length, byte density) {
   long euclidean = 0;
-  if(density >= length) density = length;
+  if (density >= length) density = length;
   int level = 0;
   int divisor = length - density;
   int remainders[MAX_STEP_INDEX + 1];
@@ -385,8 +387,8 @@ long Track::euclidean(byte length, byte density) {
   counts[level] = divisor;
   int pattern[MAX_STEP_INDEX + 1];
   build(pattern, level, counts, remainders);
-  for(int step = 0; step < length; ++step) bitWrite(euclidean, step, pattern[step]);
-  if(euclidean != 0) while(!bitRead(euclidean, 0)) rotate(euclidean, 0, length, 1);
+  for (int step = 0; step < length; ++step) bitWrite(euclidean, step, pattern[step]);
+  if (euclidean != 0) while (!bitRead(euclidean, 0)) rotate(euclidean, 0, length, 1);
   return euclidean;
 }
 
@@ -411,7 +413,7 @@ void Track::build(int pattern[], int &step, int level, int counts[], int remaind
 void Track::rotate(long &pattern, int start, int end, int offset) {
   int original = pattern;
   int length = end - start;
-  for(int index = start; index <= end; ++index) {
+  for (int index = start; index <= end; ++index) {
     int set = index + offset;
     if (set < start) set = set + length + 1;
     else if (set > end) set = set - length - 1;

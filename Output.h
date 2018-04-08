@@ -8,7 +8,7 @@ class Output {
 public:
   Output(byte io);
   virtual void initialise();
-  byte signal(Signal signal, OutMode mode, int step);
+  byte write(Signal signal, OutMode mode, byte value);
 private:
   byte pin;
   unsigned long triggerStart;

@@ -66,6 +66,7 @@
 #define TRACK5 12
 #define TRACK6 13
 
+byte index = 0;
 byte channel = 0;
 byte shift = 0;
 byte steps = 0;
@@ -81,21 +82,19 @@ Button clearButton = Button(CLEAR_BUTTON, true);
 Button fillButton = Button(FILL_BUTTON, false);
 Button resetButton = Button(RESET_BUTTON, false);
 Button deleteButton = Button(DELETE_BUTTON, false);
-Button recordButton = Button(BIG_BUTTON, false);
+Button bigButton = Button(BIG_BUTTON, false);
 
-Button button[BUTTONS] = {bankButton, clearButton, fillButton, resetButton, deleteButton, recordButton};
+Button *button[BUTTONS] = {&bankButton, &clearButton, &fillButton, &resetButton, &deleteButton, &bigButton};
 Output out[TRACKS] = {Output(TRACK1), Output(TRACK2), Output(TRACK3), Output(TRACK4), Output(TRACK5), Output(TRACK6)};
 Track track[TRACKS] = {Track(), Track(), Track(), Track(), Track(), Track()};
 
 void setup() {
-
   clockInput.initialise();
-  for (int index = 0; index < BUTTONS; ++index) button[index].initialise();
-  for (int index = 0; index < TRACKS; ++index) {
+  for (index = 0; index < BUTTONS; ++index) button[index]->initialise();
+  for (index = 0; index < TRACKS; ++index) {
     out[index].initialise();
     track[index].initialise();
   }
-
   pinMode(BIG_LED, OUTPUT);
   startUpDisplay();
 }
@@ -103,15 +102,19 @@ void setup() {
 void loop() {
   now = millis();
 
+  // Clock on people
+  //  if (!clockGenerator.isRunning()) handleClock(clockInput.signal());
+  //  else handleClock(clockGenerator.tick());
+  //
   activeChannel();
-  shiftAmount();
-  numberOfSteps();
+  //  shiftAmount();
+  // numberOfSteps();
 
-  for (int index = 0; index < BUTTONS; ++index) button[index].read();
+  for (index = 0; index < BUTTONS; ++index) button[index]->read();
 
   if (resetButton.isChanged() && resetButton.isClicked()) {
+    for (index = 0; index < TRACKS; ++index) track[index].reset();
     shuffle.reset();
-    for (int index = 0; index < TRACKS; ++index) track[index].reset();
   }
 
   if (clearButton.isChanged()) {
@@ -119,44 +122,41 @@ void loop() {
     if (clearButton.isHeld()) track[channel].clear(); // Dump all track set up
   }
 
-  if (recordButton.isChanged() && recordButton.isClicked()) track[channel].setPattern(HIGH);
+  if (bigButton.isChanged() && bigButton.isClicked()) {
+    track[channel].setPattern(HIGH);
+  }
   if (deleteButton.isChanged() && deleteButton.isClicked()) track[channel].setPattern(LOW);
-  if (recordButton.isChanged()) track[channel].setFill(fillButton.isClicked());
+  
+  if (fillButton.isChanged()) track[channel].setFill(fillButton.isClicked());
 
   // TODO : Bank stuff?
   // TODO : Shift stuff
   // TODO : Step stuff
 
-  // Clock on people
-  if (!clockGenerator.isRunning()) handleClock(clockInput.signal());
-  else handleClock(clockGenerator.tick());
+  // Output the pattern at the current step
+ // writeStep();
+  
+  handleClock(clockInput.signal());
+
+//  Serial.println("loop time");
+//  Serial.println(millis() - now);
 
 }
 
 void handleClock(Signal signal) {
-  shuffle.clock(signal);
-  if (signal == Signal::Low && (now - lastClock) > CLOCK_WAIT) {
-    clocked = false;
-    lastClock = 0;
-  } else if (signal == Signal::Rising || signal == Signal::High) {
-    clocked = true;
-    lastClock = now;
-  }
 
-  for (int index = 0; index < TRACKS; ++index) {
+  shuffle.clock(signal);
+  
+  for (index = 0; index < TRACKS; ++index) {
     if (signal == Signal::Rising) track[index].stepOn();
-    handleStep(index);
+    Signal signal = shuffle.tick(track, track[index].getShuffle());
+    if(index == channel && bigButton.isChanged() && bigButton.isClicked()) signal = Signal::Rising;
+    else if (!track[index].getStepped() && Signal::Rising) signal = Signal::Low;
+    out[index].write(signal, track[index].getOutMode(), track[index].getStep());
   }
 
   if (track[channel].getPosition() % 16 == 0) digitalWrite(BIG_LED, HIGH);
   else digitalWrite(BIG_LED, LOW);
-}
-
-void handleStep(int index) {
-  int step = track[index].getStep();
-  Signal signal = shuffle.tick(track, track[index].getShuffle());
-  if (!track[index].getStepped() && Signal::Rising) signal = Signal::Low;
-  int output = out[index].signal(signal, track[index].getOutMode(), step);
 }
 
 void activeChannel() {
@@ -164,20 +164,18 @@ void activeChannel() {
 }
 
 void numberOfSteps() {
-  steps = 1 << map(analogRead(1), 0, 1023, 2, 6);
+  steps = 1 << map(analogRead(1), 0, 1023, 2, 5);
 }
 
 void shiftAmount() {
   shift = map(analogRead(2), 0, 1023, 0, steps);
 }
 
-//void debug() {
-//  for (int i = 0; i < TRACKS; ++i) {
-//    digitalWrite(out[i], HIGH);
-//    delay(50);
-//    digitalWrite(out[i], LOW);
-//  }
-//}
+void debug(int out) {
+  digitalWrite(out, HIGH);
+  delay(50);
+  digitalWrite(out, LOW);
+}
 //
 //void debugOut(int out) {
 //  for (int i = 0; i < 5; ++i) {

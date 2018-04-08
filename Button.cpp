@@ -3,11 +3,15 @@
 #define HOLD_TIME 100
 
 Button::Button(byte io, bool holdable)
-  : pin(io), canHold(holdable), holdStart(0), oldState(ButtonState::Released), event{false, ButtonState::Released} {
+  : pin(io), canHold(holdable) {
 }
 
 void Button::initialise() {
   pinMode(pin, INPUT);
+  holdStart = 0;
+  oldState = ButtonState::Released;
+  event.changed = false;
+  event.state = ButtonState::Released;
 }
 
 void Button::read() {
@@ -42,10 +46,10 @@ bool Button::isReleased() {
 }
 
 bool Button::isClicked() {
-  return canHold && event.state == ButtonState::Clicked;
+  return event.state == ButtonState::Clicked;
 }
 
 bool Button::isHeld() {
-  return event.state == ButtonState::Held;
+  return canHold && event.state == ButtonState::Held;
 }
 

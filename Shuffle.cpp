@@ -7,7 +7,7 @@
 #define BEATS 16
 
 Shuffle::Shuffle()
- : gate(0), beat(0), state{0, Signal::Low, {Signal::Low, Signal::Low, Signal::Low, Signal::Low}, {false, false, false, false}} {
+ : gate(0), beat(0), state{0, Signal::Low, {Signal::Low, Signal::Low,Signal::Low, Signal::Low, Signal::Low, Signal::Low}, {false, false, false, false, false, false}} {
 }
 
 void Shuffle::clock(Signal signal) {

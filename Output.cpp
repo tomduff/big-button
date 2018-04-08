@@ -1,6 +1,6 @@
 #include "Output.h"
 
-#define TRIGGER_PULSE 20
+#define TRIGGER_PULSE 50
 
 Output::Output(byte io)
  : pin(io), triggerStart(0) {
@@ -10,17 +10,17 @@ void Output::initialise() {
 		pinMode(pin, OUTPUT);
 }
 
-byte Output::signal(Signal signal, OutMode mode, int step) {
+byte Output::write(Signal signal, OutMode mode, byte value) {
 	byte out = LOW;
 	switch(mode) {
 		case Trigger:
-			if (step) out = handleTrigger(signal);
+			if (value) out = handleTrigger(signal);
 		  break;
 		case Gate:
-			if (step) out = HIGH;
+			if (value) out = HIGH;
 		  break;
 		case Clock:
-		  if (step && (signal == Signal::Rising || signal == Signal::High)) out = HIGH;
+		  if (value && (signal == Signal::Rising || signal == Signal::High)) out = HIGH;
 			break;
 	}
 	digitalWrite(pin, out);
@@ -33,7 +33,7 @@ byte Output::handleTrigger(Signal signal) {
 	if (signal == Signal::Rising) {
 		out = HIGH;
 		triggerStart = now;
-	} else if (signal == Signal::High && (triggerStart != 0) && (now - triggerStart < TRIGGER_PULSE)) {
+	} else if ((triggerStart != 0) && (now - triggerStart < TRIGGER_PULSE)) {
 		out = HIGH;
 	} else {
 		triggerStart = 0;
