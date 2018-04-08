@@ -4,6 +4,12 @@
 #include <Arduino.h>
 #include "Io.h"
 
+#define MAX_STEP_INDEX 31
+#define MAX_BEAT_DIVIDER 6
+#define MAX_TRIPLET_DIVIDER 7
+#define MAX_SHUFFLE 15
+#define MAX_MUTATION 37
+
 enum PlayMode {
   Forward = 0,
   Backward = 1,

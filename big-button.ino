@@ -36,6 +36,7 @@
 #include "Input.h"
 #include "Output.h"
 #include "Button.h"
+#include "Dial.h"
 #include "Shuffle.h"
 #include "Track.h"
 #include "ClockGenerator.h"
@@ -47,6 +48,7 @@
 #define TOLERANCE 0
 #define TRACKS 6
 #define BUTTONS 6
+#define DIALS 3
 
 #define CLOCK_WAIT 5000
 
@@ -58,6 +60,10 @@
 #define DELETE_BUTTON 7
 #define BIG_BUTTON 19
 
+#define CHANNEL_POT 0
+#define STEP_POT 1
+#define SHIFT_POT 2
+
 #define BIG_LED 18
 #define TRACK1 8
 #define TRACK2 9
@@ -67,16 +73,19 @@
 #define TRACK6 13
 
 byte index = 0;
-byte channel = 0;
+byte active = 0;
 byte shift = 0;
 byte steps = 0;
 bool clocked = false;
 unsigned long now = 0;
 unsigned long lastClock = 0;
 
-ClockGenerator clockGenerator = ClockGenerator();
+//ClockGenerator clockGenerator = ClockGenerator();
+
 Shuffle shuffle = Shuffle();
+
 Input clockInput = Input(CLOCK);
+
 Button bankButton = Button(BANK_BUTTON, false);
 Button clearButton = Button(CLEAR_BUTTON, true);
 Button fillButton = Button(FILL_BUTTON, false);
@@ -84,7 +93,12 @@ Button resetButton = Button(RESET_BUTTON, false);
 Button deleteButton = Button(DELETE_BUTTON, false);
 Button bigButton = Button(BIG_BUTTON, false);
 
+Dial channelDial = Dial(CHANNEL_POT);
+Dial stepDial = Dial(STEP_POT);
+Dial shiftDial = Dial(SHIFT_POT);
+
 Button *button[BUTTONS] = {&bankButton, &clearButton, &fillButton, &resetButton, &deleteButton, &bigButton};
+Dial *dial[DIALS] = {&channelDial, &stepDial, &shiftDial};
 Output out[TRACKS] = {Output(TRACK1), Output(TRACK2), Output(TRACK3), Output(TRACK4), Output(TRACK5), Output(TRACK6)};
 Track track[TRACKS] = {Track(), Track(), Track(), Track(), Track(), Track()};
 
@@ -97,6 +111,8 @@ void setup() {
   }
   pinMode(BIG_LED, OUTPUT);
   startUpDisplay();
+
+  //Serial.begin(9600);
 }
 
 void loop() {
@@ -105,12 +121,13 @@ void loop() {
   // Clock on people
   //  if (!clockGenerator.isRunning()) handleClock(clockInput.signal());
   //  else handleClock(clockGenerator.tick());
-  //
-  activeChannel();
-  //  shiftAmount();
-  // numberOfSteps();
 
   for (index = 0; index < BUTTONS; ++index) button[index]->read();
+  for (index = 0; index < DIALS; ++index) dial[index]->read();
+
+  if(channelDial.isChanged()) active = channelDial.value(0, TRACKS - 1);
+  if(stepDial.isChanged()) track[active].setLength(stepDial.value(0, MAX_STEP_INDEX));
+  if(shiftDial.isChanged()) track[active].rotatePattern(shiftDial.value(-track[active].getLength(), track[active].getLength()));
 
   if (resetButton.isChanged() && resetButton.isClicked()) {
     for (index = 0; index < TRACKS; ++index) track[index].reset();
@@ -118,24 +135,22 @@ void loop() {
   }
 
   if (clearButton.isChanged()) {
-    if (clearButton.isClicked()) track[channel].clearPattern(); // Just dump the recorded pattern
-    if (clearButton.isHeld()) track[channel].clear(); // Dump all track set up
+    if (clearButton.isClicked()) track[active].clearPattern(); // Just dump the recorded pattern
+    if (clearButton.isHeld()) track[active].clear(); // Dump all track set up
   }
 
   if (bigButton.isChanged() && bigButton.isClicked()) {
-    track[channel].setPattern(HIGH);
+    track[active].setPattern(HIGH);
   }
-  if (deleteButton.isChanged() && deleteButton.isClicked()) track[channel].setPattern(LOW);
+  if (deleteButton.isChanged() && deleteButton.isClicked()) track[active].setPattern(LOW);
   
-  if (fillButton.isChanged()) track[channel].setFill(fillButton.isClicked());
+  if (fillButton.isChanged()) track[active].setFill(fillButton.isClicked());
 
   // TODO : Bank stuff?
   // TODO : Shift stuff
   // TODO : Step stuff
 
-  // Output the pattern at the current step
- // writeStep();
-  
+  // Clock on, Step on
   handleClock(clockInput.signal());
 
 //  Serial.println("loop time");
@@ -150,51 +165,14 @@ void handleClock(Signal signal) {
   for (index = 0; index < TRACKS; ++index) {
     if (signal == Signal::Rising) track[index].stepOn();
     Signal signal = shuffle.tick(track, track[index].getShuffle());
-    if(index == channel && bigButton.isChanged() && bigButton.isClicked()) signal = Signal::Rising;
+    if(index == active && bigButton.isChanged() && bigButton.isClicked()) signal = Signal::Rising;
     else if (!track[index].getStepped() && Signal::Rising) signal = Signal::Low;
     out[index].write(signal, track[index].getOutMode(), track[index].getStep());
   }
 
-  if (track[channel].getPosition() % 16 == 0) digitalWrite(BIG_LED, HIGH);
+  if (track[active].getPosition() % 16 == 0) digitalWrite(BIG_LED, HIGH);
   else digitalWrite(BIG_LED, LOW);
 }
-
-void activeChannel() {
-  channel = map(analogRead(0), 0, 1023, 0 , 5);
-}
-
-void numberOfSteps() {
-  steps = 1 << map(analogRead(1), 0, 1023, 2, 5);
-}
-
-void shiftAmount() {
-  shift = map(analogRead(2), 0, 1023, 0, steps);
-}
-
-void debug(int out) {
-  digitalWrite(out, HIGH);
-  delay(50);
-  digitalWrite(out, LOW);
-}
-//
-//void debugOut(int out) {
-//  for (int i = 0; i < 5; ++i) {
-//    digitalWrite(out[out], HIGH);
-//    delay(50);
-//    digitalWrite(out[out], LOW);
-//    delay(50);
-//  }
-//}
-//
-//void debugNumber(int number, int out) {
-//  for (int i = 0; i < number; ++i) {
-//    digitalWrite(out[out], HIGH);
-//    delay(200);
-//    digitalWrite(out[out], LOW);
-//    delay(200);
-//  }
-//  delay(2000);
-//}
 
 void startUpDisplay() {
   digitalWrite(BIG_LED, HIGH);

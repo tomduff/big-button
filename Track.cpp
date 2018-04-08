@@ -5,11 +5,6 @@
 
 #define CONFIG_VERSION 105
 #define CONFIG_ADDRESS 0
-#define MAX_STEP_INDEX 31
-#define MAX_BEAT_DIVIDER 6
-#define MAX_TRIPLET_DIVIDER 7
-#define MAX_SHUFFLE 15
-#define MAX_MUTATION 37
 #define MUTATION_FACTOR 100
 
 Track::Track() {
