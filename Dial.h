@@ -16,7 +16,6 @@ public:
   bool isChanged();
   int value();
   byte value(byte min, byte max);
-  int value(int min, int max);
 private:
   byte pin;
   int oldValue;

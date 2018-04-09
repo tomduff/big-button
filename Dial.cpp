@@ -32,7 +32,3 @@ byte Dial::value(byte min, byte max) {
   return map(event.value, MIN_VALUE , MAX_VALUE, min, max);
 }
 
-int Dial::value(int min, int max) {
-  return map(event.value, MIN_VALUE , MAX_VALUE, min, max);
-}
-

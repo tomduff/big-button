@@ -24,7 +24,7 @@
 // STEP LENGTH analog pin 1 (A1)
 // Channel select Analog pin (A0)
 // SHIFT KNOB Analog pin (A2)
-// LED (big button LED) pin 20 (A6)
+// LED (big button LED) pin 18 (A4)
 
 // OUT 1 ... pin 8
 // OUT 2 ... pin 9
@@ -78,6 +78,7 @@ byte shift = 0;
 byte steps = 0;
 bool clocked = false;
 unsigned long now = 0;
+unsigned long duration = 0;
 unsigned long lastClock = 0;
 
 //ClockGenerator clockGenerator = ClockGenerator();
@@ -118,6 +119,9 @@ void setup() {
 void loop() {
   now = millis();
 
+  // Clock on, Step on
+  handleClock(clockInput.signal());
+
   // Clock on people
   //  if (!clockGenerator.isRunning()) handleClock(clockInput.signal());
   //  else handleClock(clockGenerator.tick());
@@ -125,9 +129,9 @@ void loop() {
   for (index = 0; index < BUTTONS; ++index) button[index]->read();
   for (index = 0; index < DIALS; ++index) dial[index]->read();
 
-  if(channelDial.isChanged()) active = channelDial.value(0, TRACKS - 1);
-  if(stepDial.isChanged()) track[active].setLength(stepDial.value(0, MAX_STEP_INDEX));
-  if(shiftDial.isChanged()) track[active].rotatePattern(shiftDial.value(-track[active].getLength(), track[active].getLength()));
+  if (channelDial.isChanged()) active = channelDial.value(0, TRACKS - 1);
+  if (stepDial.isChanged()) track[active].setLength(stepDial.value(0, MAX_STEP_INDEX));
+  if (shiftDial.isChanged()) track[active].rotatePattern(shiftDial.value(-track[active].getLength(), track[active].getLength()));
 
   if (resetButton.isChanged() && resetButton.isClicked()) {
     for (index = 0; index < TRACKS; ++index) track[index].reset();
@@ -140,38 +144,48 @@ void loop() {
   }
 
   if (bigButton.isChanged() && bigButton.isClicked()) {
-    track[active].setPattern(HIGH);
+    // Quantize to nearest beat
+    if (now - lastClock < duration / 2) track[active].setPattern(HIGH);
+    else track[active].setNextPattern(HIGH);
   }
   if (deleteButton.isChanged() && deleteButton.isClicked()) track[active].setPattern(LOW);
-  
+
   if (fillButton.isChanged()) track[active].setFill(fillButton.isClicked());
-
-  // TODO : Bank stuff?
-  // TODO : Shift stuff
-  // TODO : Step stuff
-
-  // Clock on, Step on
-  handleClock(clockInput.signal());
-
-//  Serial.println("loop time");
-//  Serial.println(millis() - now);
-
 }
 
 void handleClock(Signal signal) {
 
+  // Let shuffle know the new clock signal
   shuffle.clock(signal);
-  
+
   for (index = 0; index < TRACKS; ++index) {
-    if (signal == Signal::Rising) track[index].stepOn();
+
+    // Step on
+    if (signal == Signal::Rising) {
+      track[index].stepOn();
+      clockOn();
+    }
+
+    // Shuffle step
     Signal signal = shuffle.tick(track, track[index].getShuffle());
-    if(index == active && bigButton.isChanged() && bigButton.isClicked()) signal = Signal::Rising;
+
+    // Force a trigger when the button is pressed regardless as to whether we are on a beat
+    if (index == active && bigButton.isChanged() && bigButton.isClicked()) signal = Signal::Rising;
+
+    // Otherwise only trigger when we step to a trigger
     else if (!track[index].getStepped() && Signal::Rising) signal = Signal::Low;
+
+    // Send that beat
     out[index].write(signal, track[index].getOutMode(), track[index].getStep());
   }
 
   if (track[active].getPosition() % 16 == 0) digitalWrite(BIG_LED, HIGH);
   else digitalWrite(BIG_LED, LOW);
+}
+
+void clockOn() {
+  if (lastClock != 0) duration = now - lastClock;
+  lastClock = now;
 }
 
 void startUpDisplay() {

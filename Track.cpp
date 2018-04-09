@@ -32,7 +32,14 @@ void Track::clearPattern() {
 }
 
 void Track::setPattern(byte value) {
-  int step = track.start + state.position;
+  setPattern(track.start + state.position, value);
+}
+
+void Track::setNextPattern(byte value) {
+  setPattern( track.start + stepOn(state.position), value);
+}
+
+void Track::setPattern(byte step, byte value) {
   bitWrite(track.pattern, step, value);
   resetPattern();
   change = true;
@@ -222,33 +229,35 @@ void Track::stepOn() {
   ++state.beat;
   if (state.beat >= state.division) {
     state.beat = 0;
-    stepPosition();
+    state.position = stepOn(state.position);
     state.stepped = true;
+     if (state.position == 0) mutate();
   } else {
     state.stepped = false;
   }
 }
 
-void Track::stepPosition() {
-  switch (track.play) {
+byte Track::stepOn(byte current) {
+    byte next = current;
+    switch (track.play) {
     case Forward:
-      ++state.position;
-      Utilities::cycle(state.position, 0, state.length);
+      ++next;
+      Utilities::cycle(next, 0, state.length);
       break;
     case Backward:
-      --state.position;
-      Utilities::cycle(state.position, 0, state.length);
+      --next;
+      Utilities::cycle(next, 0, state.length);
       break;
     case Random:
-      state.position = random(0, state.length + 1);
+      next = random(0, state.length + 1);
       break;
     case Pendulum:
-      if (state.forward) ++state.position;
-      else --state.position;
-      if (Utilities::reverse(state.position, 0, state.length)) state.forward  = !state.forward ;
+      if (state.forward) ++next;
+      else --next;
+      if (Utilities::reverse(next, 0, state.length)) state.forward  = !state.forward ;
       break;
   }
-  if (state.position == 0) mutate();
+  return next;
 }
 
 void Track::mutate() {

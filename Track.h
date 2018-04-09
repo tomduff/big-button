@@ -68,6 +68,8 @@ public:
   void clearPattern();
   void resetPattern();
   void setPattern(byte value);
+  void setNextPattern(byte value);
+  void setPattern(byte step, byte value);
   void updatePattern(byte position);
   void rotatePattern(byte offset);
   void setOffset(byte offset);
@@ -107,7 +109,7 @@ private:
   bool change = false;
   TrackDef track;
   TrackState state;
-  void stepPosition();
+  byte stepOn(byte current);
   void mutate();
 //  void load();
   void initialiseTrack();
