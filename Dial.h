@@ -12,13 +12,11 @@ class Dial {
 public:
   Dial(byte io);
   void initialise();
-  void read();
+  bool read(byte min, byte max);
   bool isChanged();
-  int value();
-  byte value(byte min, byte max);
+  byte value();
 private:
   byte pin;
-  int oldValue;
   DialEvent event;
 };
 

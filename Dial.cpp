@@ -1,6 +1,5 @@
 #include "Dial.h"
 
-#define TOLERANCE 10
 #define MIN_VALUE 0
 #define MAX_VALUE 1023
 
@@ -10,25 +9,20 @@ Dial::Dial(byte io)
 
 void Dial::initialise() {
   pinMode(pin, INPUT);
-  read();
 }
 
-void Dial::read() {
-  int newValue =  analogRead(pin);
-  event.changed = abs(event.value - newValue) > TOLERANCE;
+bool Dial::read(byte min, byte max) {
+  int newValue =  map(analogRead(pin), MIN_VALUE , MAX_VALUE, min, max);
+  event.changed = event.value != newValue;
   event.value = newValue;
-  oldValue = newValue;
+  return event.changed;
 }
 
 bool Dial::isChanged() {
   return event.changed;
 }
 
-int Dial::value() {
+byte Dial::value() {
   return event.value;
-}
-
-byte Dial::value(byte min, byte max) {
-  return map(event.value, MIN_VALUE , MAX_VALUE, min, max);
 }
 

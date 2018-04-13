@@ -1,0 +1,10 @@
+compile:
+  libraries: ~
+  platforms:
+    - nano
+
+unittest:
+  libraries: ~
+  platforms:
+    - nano
+    

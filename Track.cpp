@@ -32,11 +32,11 @@ void Track::clearPattern() {
 }
 
 void Track::setPattern(byte value) {
-  setPattern(track.start + state.position, value);
+  setPattern(state.position, value);
 }
 
 void Track::setNextPattern(byte value) {
-  setPattern( track.start + stepOn(state.position), value);
+  setPattern(stepOn(state.position), value);
 }
 
 void Track::setPattern(byte step, byte value) {
@@ -46,49 +46,68 @@ void Track::setPattern(byte step, byte value) {
 }
 
 void Track::updatePattern(byte position) {
-  int step = track.start + position;
-  bitWrite(track.pattern, step, !bitRead(track.pattern, step));
+  bitWrite(track.pattern, position, !bitRead(track.pattern, position));
   resetPattern();
   change = true;
 }
 
 void Track::rotatePattern(byte offset) {
-  rotate(track.pattern, track.start, track.end, offset);
-  resetPattern();
-  change = true;
+
+  if (offset < track.length) {
+    int shift = offset - track.offset;
+    track.offset = offset < track.length ? offset : offset - track.length;
+
+    Serial.print("\n");
+    Serial.println("********************************************");
+    Serial.print("offset\t");
+    Serial.print(offset);
+    Serial.print("\n");
+    Serial.print("track.offset\t");
+    Serial.print(track.offset);
+    Serial.print("\n");
+    Serial.print("shift\t");
+    Serial.print(shift);
+    Serial.print("\n");
+    Serial.print("track.length\t");
+    Serial.print(track.length);
+    Serial.print("\n");
+    Serial.print("pattern\t");
+
+    for (int i = 0; i < track.length; ++i) Serial.print(bitRead(track.pattern, i));
+    Serial.print("\n");
+
+    Serial.print("rotated\t");
+    rotate(track.pattern, shift);
+
+    for (int i = 0; i < track.length; ++i) Serial.print(bitRead(track.pattern, i));
+    Serial.print("\n");
+    Serial.println("********************************************");
+    Serial.print("\n");
+
+    resetPattern();
+    change = true;
+  }
 }
 
-void Track::setStart(byte offset) {
-  track.start += offset;
-  Utilities::bound(track.start, 0, track.end);
-  resetLength();
-  resetPattern();
-  change = true;
+void Track::setLength(byte length) {
+  if (track.length != length) {
+    track.length = length;
+    Utilities::bound(track.length, 1, MAX_STEPS);
+    Utilities::bound(track.offset, 0, track.length - 1);
+    Utilities::bound(track.density, 0, track.length - 1);
+    resetLength();
+    resetPattern();
+    change = true;
+  }
 }
 
-void Track::setEnd(byte offset) {
-  track.end += offset;
-  Utilities::bound(track.end, track.start, MAX_STEP_INDEX);
-  resetLength();
-  resetPattern();
-  change = true;
-}
-
-void Track::setLength(byte offset) {
-  track.length += offset;
-  Utilities::bound(track.length, 0, MAX_STEP_INDEX);
-  Utilities::bound(track.offset, 0, track.length);
-  Utilities::bound(track.density, 0, track.length);
-  resetLength();
-  resetPattern();
-  change = true;
-}
-
-void Track::setDensity(byte offset) {
-  track.density += offset;
-  Utilities::bound(track.density, 0, track.length);
-  resetPattern();
-  change = true;
+void Track::setDensity(byte density) {
+  if (track.density != track.density) {
+    track.density = density;
+    Utilities::bound(track.density, 0, track.length);
+    resetPattern();
+    change = true;
+  }
 }
 
 void Track::setOffset(byte offset) {
@@ -165,14 +184,6 @@ void Track::setFill(bool fill) {
   state.fill = fill;
 }
 
-byte Track::getStart() {
-  return track.start;
-}
-
-byte Track::getEnd() {
-  return track.end;
-}
-
 byte Track::getLength() {
   return state.length;
 }
@@ -231,30 +242,30 @@ void Track::stepOn() {
     state.beat = 0;
     state.position = stepOn(state.position);
     state.stepped = true;
-     if (state.position == 0) mutate();
+    if (state.position == 0) mutate();
   } else {
     state.stepped = false;
   }
 }
 
 byte Track::stepOn(byte current) {
-    byte next = current;
-    switch (track.play) {
+  byte next = current;
+  switch (track.play) {
     case Forward:
       ++next;
-      Utilities::cycle(next, 0, state.length);
+      Utilities::cycle(next, 0, (int)state.length - 1);
       break;
     case Backward:
       --next;
-      Utilities::cycle(next, 0, state.length);
+      Utilities::cycle(next, 0, (int)state.length - 1);
       break;
     case Random:
-      next = random(0, state.length + 1);
+      next = random(0, state.length);
       break;
     case Pendulum:
       if (state.forward) ++next;
       else --next;
-      if (Utilities::reverse(next, 0, state.length)) state.forward  = !state.forward ;
+      if (Utilities::reverse(next, 0, state.length - 1)) state.forward  = !state.forward ;
       break;
   }
   return next;
@@ -276,7 +287,7 @@ void Track::mutate() {
       break;
   }
 
-  for (int index = 0; index <= state.length; ++index) {
+  for (int index = 0; index < state.length; ++index) {
     bool step = bitRead(seed, index);
     if (random(1, MUTATION_FACTOR) <= pow(track.mutation, 2)) step = !step;
     bitWrite(state.pattern, index, step);
@@ -300,9 +311,7 @@ void Track::mutate() {
 
 void Track::initialiseTrack() {
   track.pattern = 0;
-  track.start = 0;
-  track.end = MAX_STEP_INDEX;
-  track.length = MAX_STEP_INDEX;
+  track.length = MAX_STEPS;
   track.density = 0;
   track.offset = 0;
   track.divider = 0;
@@ -324,17 +333,6 @@ void Track::initialiseState() {
   resetPattern();
 }
 
-void Track::resetLength() {
-  switch (track.patternType) {
-    case Programmed:
-      state.length = track.end - track.start;
-      break;
-    case Euclidean:
-      state.length = track.length;
-      break;
-  }
-}
-
 void Track::resetPattern() {
   switch (track.patternType) {
     case Programmed:
@@ -346,10 +344,14 @@ void Track::resetPattern() {
   }
 }
 
+void Track::resetLength() {
+  state.length = track.length;
+}
+
 void Track::resetProgrammed() {
   state.pattern = 0;
   int index = 0;
-  for (int step = track.start; step <= track.end; ++step) {
+  for (int step = 0; step < track.length; ++step) {
     bitWrite(state.pattern, index, bitRead(track.pattern, step));
     ++index;
   }
@@ -357,8 +359,8 @@ void Track::resetProgrammed() {
 
 void Track::resetEuclidean() {
   state.pattern = 0;
-  state.pattern = euclidean(track.length + 1, track.density + 1);
-  if (track.offset > 0) rotate(state.pattern, 0, track.length, track.offset);
+  state.pattern = euclidean(track.density + 1);
+  if (track.offset > 0) rotate(state.pattern, track.offset);
 }
 
 void Track::resetDivision() {
@@ -374,13 +376,13 @@ int Track::calculateDivision(int divider, DividerType type) {
   return division;
 }
 
-long Track::euclidean(byte length, byte density) {
+long Track::euclidean(byte density) {
   long euclidean = 0;
-  if (density >= length) density = length;
+  if (density > track.length) density = track.length;
   int level = 0;
-  int divisor = length - density;
-  int remainders[MAX_STEP_INDEX + 1];
-  int counts[MAX_STEP_INDEX + 1];
+  int divisor = track.length - density;
+  int remainders[MAX_STEPS];
+  int counts[MAX_STEPS];
   remainders[0] = density;
   do {
     counts[level] = divisor / remainders[level];
@@ -389,10 +391,10 @@ long Track::euclidean(byte length, byte density) {
     ++level;
   } while (remainders[level] > 1);
   counts[level] = divisor;
-  int pattern[MAX_STEP_INDEX + 1];
+  int pattern[MAX_STEPS];
   build(pattern, level, counts, remainders);
-  for (int step = 0; step < length; ++step) bitWrite(euclidean, step, pattern[step]);
-  if (euclidean != 0) while (!bitRead(euclidean, 0)) rotate(euclidean, 0, length, 1);
+  for (int step = 0; step < track.length; ++step) bitWrite(euclidean, step, pattern[step]);
+  if (euclidean != 0) while (!bitRead(euclidean, 0)) rotate(euclidean, 1);
   return euclidean;
 }
 
@@ -414,13 +416,21 @@ void Track::build(int pattern[], int &step, int level, int counts[], int remaind
   }
 }
 
-void Track::rotate(long &pattern, int start, int end, int offset) {
+void Track::rotate(long &pattern, int offset) {
   int original = pattern;
-  int length = end - start;
-  for (int index = start; index <= end; ++index) {
+  for (int index = 0; index < track.length; ++index) {
     int set = index + offset;
-    if (set < start) set = set + length + 1;
-    else if (set > end) set = set - length - 1;
+    Utilities::cycle(set, 0, track.length - 1);
+
+    if (set < 0 || set >= track.length) {
+      Serial.println(" **** **** * **** ** ");
+      Serial.print("out of bounds : ");
+      Serial.print("set : ");
+      Serial.print(set);
+      Serial.print("index : ");
+      Serial.print(index);
+      Serial.println(" - arrggghh");
+    }
     bitWrite(pattern, set, bitRead(original, index));
   }
 }

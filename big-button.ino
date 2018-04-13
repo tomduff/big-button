@@ -113,7 +113,7 @@ void setup() {
   pinMode(BIG_LED, OUTPUT);
   startUpDisplay();
 
-  //Serial.begin(9600);
+  Serial.begin(9600);
 }
 
 void loop() {
@@ -122,16 +122,14 @@ void loop() {
   // Clock on, Step on
   handleClock(clockInput.signal());
 
-  // Clock on people
   //  if (!clockGenerator.isRunning()) handleClock(clockInput.signal());
   //  else handleClock(clockGenerator.tick());
 
   for (index = 0; index < BUTTONS; ++index) button[index]->read();
-  for (index = 0; index < DIALS; ++index) dial[index]->read();
 
-  if (channelDial.isChanged()) active = channelDial.value(0, TRACKS - 1);
-  if (stepDial.isChanged()) track[active].setLength(stepDial.value(0, MAX_STEP_INDEX));
-  if (shiftDial.isChanged()) track[active].rotatePattern(shiftDial.value(-track[active].getLength(), track[active].getLength()));
+  if (channelDial.read(0, TRACKS - 1)) active = channelDial.value();
+  if (stepDial.read(1, MAX_STEPS)) track[active].setLength(stepDial.value());
+  if (shiftDial.read(0, track[active].getLength() - 1) ) track[active].rotatePattern(shiftDial.value());
 
   if (resetButton.isChanged() && resetButton.isClicked()) {
     for (index = 0; index < TRACKS; ++index) track[index].reset();
@@ -186,6 +184,21 @@ void handleClock(Signal signal) {
 void clockOn() {
   if (lastClock != 0) duration = now - lastClock;
   lastClock = now;
+}
+
+void debug() {
+  digitalWrite(12, HIGH);
+  delay(100);
+  digitalWrite(12, LOW);
+}
+
+void debug(int count) {
+  for (int i = 0; i <  count; ++i) {
+    digitalWrite(12, HIGH);
+    delay(100);
+    digitalWrite(12, LOW);
+    delay(100);
+  }
 }
 
 void startUpDisplay() {

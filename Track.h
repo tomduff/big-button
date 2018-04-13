@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include "Io.h"
 
-#define MAX_STEP_INDEX 31
+#define MIN_STEPS 1
+#define MAX_STEPS 32
 #define MAX_BEAT_DIVIDER 6
 #define MAX_TRIPLET_DIVIDER 7
 #define MAX_SHUFFLE 15
@@ -35,8 +36,6 @@ enum MutationSeed {
 
 struct TrackDef {
   long pattern;
-  byte start;
-  byte end;
   byte length;
   byte density;
   byte offset;
@@ -73,10 +72,8 @@ public:
   void updatePattern(byte position);
   void rotatePattern(byte offset);
   void setOffset(byte offset);
-  void setDensity(byte offset);
-  void setLength(byte offset);
-  void setStart(byte offset);
-  void setEnd(byte offset);
+  void setDensity(byte density);
+  void setLength(byte length);
   void setPlayMode(byte offset);
   void setOutMode(byte offset);
   void setDivider(byte offset);
@@ -86,8 +83,6 @@ public:
   void setMutation(byte offset);
   void nextMutationSeed();
   void setFill(bool fill);
-  byte getStart();
-  byte getEnd();
   byte getLength();
   byte getPattern();
   byte getPosition();
@@ -119,10 +114,10 @@ private:
   void resetProgrammed();
   void resetEuclidean();
   int calculateDivision(int divider, DividerType type);
-  long euclidean(byte length, byte density);
+  long euclidean(byte density);
   void build(int pattern[], int level, int counts[], int remainders[]);
   void build(int pattern[], int &step, int level, int counts[], int remainders[]);
-  void rotate(long &pattern, int start, int end, int offset);
+  void rotate(long &pattern, int offset);
 };
 
 #endif
