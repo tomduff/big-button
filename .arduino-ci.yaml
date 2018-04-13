@@ -1,10 +1,14 @@
 compile:
   libraries: ~
   platforms:
-    - nano
+    - uno
+    - due
+    - leonardo
 
 unittest:
   libraries: ~
   platforms:
-    - nano
+    - uno
+    - due
+    - leonardo
     
