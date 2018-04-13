@@ -1,2 +1,2 @@
 source 'https://rubygems.org'
-gem 'arduino_ci', path: '../../'
+gem 'arduino_ci'
