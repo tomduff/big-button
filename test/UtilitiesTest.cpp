@@ -49,3 +49,5 @@ unittest(bound_byte)
     Utilities::bound(value, min_bound, max_bound);
     assertEquals(max_bound, value);
 }
+
+unittest_main()
