@@ -40,7 +40,7 @@ unittest(bound_byte)
 
     value = 4;
     Utilities::bound(value, min_bound, max_bound);
-    assertEqual(7, value);
+    assertEqual(4, value);
 
     value = -2;
     Utilities::bound(value, min_bound, max_bound);
