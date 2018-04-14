@@ -1,51 +1,51 @@
 #include <ArduinoUnitTests.h>
 
-#define min 0;
-#define max 15;
+#define min_bound 0;
+#define max_bound 15;
 
 unittest(bound_int)
 {
-    int value = min;
-    Utilities.::bound(value, min, max);
-    assertEquals(min, value);
+    int value = min_bound;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(min_bound, value);
 
-    value = max;
-    Utilities.::bound(value, min, max);
-    assertEquals(max, value);
+    value = max_bound;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(max_bound, value);
 
     value = 7;
-    Utilities.::bound(value, min, max);
+    Utilities::bound(value, min_bound, max_bound);
     assertEquals(7, value);
 
     value = - 1;
-    Utilities.::bound(value, min, max);
-    assertEquals(min, value);
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(min_bound, value);
 
     value = 16;
-    Utilities.::bound(value, min, max);
-    assertEquals(max, value);
+    Utilities::bound(value, min_bound ,max_boundmax);
+    assertEquals(max_bound, value);
 }
 
 unittest(bound_byte)
 {
 
-    int value = min;
-    Utilities.::bound(value, min, max);
-    assertEquals(min, value);
+    byte value = min_bound;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(min_bound, value);
 
-    value = max;
-    Utilities.::bound(value, min, max);
-    assertEquals(max, value);
+    value = max_bound;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(max_bound, value);
 
     value = 4;
-    Utilities.::bound(value, min, max);
+    Utilities::bound(value, min_bound, max_bound);
     assertEquals(7, value);
 
     value = -2;
-    Utilities.::bound(value, min, max);
-    assertEquals(min, value);
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(mmin_bound, value);
 
     value = 20;
-    Utilities.::bound(value, min, max);
-    assertEquals(max, value);
+    Utilities::bound(value, min_bound, max_bound);
+    assertEquals(max_bound, value);
 }
