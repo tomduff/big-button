@@ -112,8 +112,6 @@ void setup() {
   }
   pinMode(BIG_LED, OUTPUT);
   startUpDisplay();
-
-  Serial.begin(9600);
 }
 
 void loop() {

@@ -55,34 +55,7 @@ void Track::rotatePattern(byte offset) {
   if (offset < track.length) {
     int shift = offset - track.offset;
     track.offset = offset < track.length ? offset : offset - track.length;
-
-    Serial.print("\n");
-    Serial.println("********************************************");
-    Serial.print("offset\t");
-    Serial.print(offset);
-    Serial.print("\n");
-    Serial.print("track.offset\t");
-    Serial.print(track.offset);
-    Serial.print("\n");
-    Serial.print("shift\t");
-    Serial.print(shift);
-    Serial.print("\n");
-    Serial.print("track.length\t");
-    Serial.print(track.length);
-    Serial.print("\n");
-    Serial.print("pattern\t");
-
-    for (int i = 0; i < track.length; ++i) Serial.print(bitRead(track.pattern, i));
-    Serial.print("\n");
-
-    Serial.print("rotated\t");
     rotate(track.pattern, shift);
-
-    for (int i = 0; i < track.length; ++i) Serial.print(bitRead(track.pattern, i));
-    Serial.print("\n");
-    Serial.println("********************************************");
-    Serial.print("\n");
-
     resetPattern();
     change = true;
   }
