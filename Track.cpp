@@ -1,7 +1,6 @@
 #include "Track.h"
 #include "Utilities.h"
 #include <Arduino.h>
-#include <EEPROM.h>
 
 #define CONFIG_VERSION 105
 #define CONFIG_ADDRESS 0

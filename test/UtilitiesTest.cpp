@@ -44,7 +44,7 @@ unittest(bound_byte)
 
     value = -2;
     Utilities::bound(value, min_bound, max_bound);
-    assertEqual(mmin_bound, value);
+    assertEqual(min_bound, value);
 
     value = 20;
     Utilities::bound(value, min_bound, max_bound);
