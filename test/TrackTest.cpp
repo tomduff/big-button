@@ -1,17 +1,10 @@
 #include <ArduinoUnitTests.h>
-#include 
-
-unittest(pretend_equal_things_arent)
-{
-  int x = 3;
-  int y = 3;
-  assertNotEqual(x, y);
-}
 
 unittest(initialse)
 {
-  Track track = TRack();
+  Track track = Track();
   track.initialise();
+  
   assertEqual(0, track.getPattern();
   assertEqual(MAX_STEPS, track.getLength());
   assertEqual(0, track.getDensity());
