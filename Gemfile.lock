@@ -10,7 +10,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  arduino_ci
+  arduino_ci!
 
 BUNDLED WITH
    1.16.1
