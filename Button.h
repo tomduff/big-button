@@ -27,7 +27,7 @@ private:
   byte pin;
   bool canHold;
   unsigned long holdStart;
-  ButtonState oldState;
+  byte oldState;
   ButtonEvent event;
 };
 
