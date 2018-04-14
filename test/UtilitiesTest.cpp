@@ -1,8 +1,8 @@
 #include <ArduinoUnitTests.h>
 #include "../Utilities.h"
 
-#define min_bound 0;
-#define max_bound 15;
+#define min_bound 0
+#define max_bound 15
 
 unittest(bound_int)
 {
