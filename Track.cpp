@@ -393,16 +393,6 @@ void Track::rotate(long &pattern, int offset) {
   for (int index = 0; index < track.length; ++index) {
     int set = index + offset;
     Utilities::cycle(set, 0, track.length - 1);
-
-    if (set < 0 || set >= track.length) {
-      Serial.println(" **** **** * **** ** ");
-      Serial.print("out of bounds : ");
-      Serial.print("set : ");
-      Serial.print(set);
-      Serial.print("index : ");
-      Serial.print(index);
-      Serial.println(" - arrggghh");
-    }
     bitWrite(pattern, set, bitRead(original, index));
   }
 }
