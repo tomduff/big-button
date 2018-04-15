@@ -4,49 +4,72 @@
 #define min_bound 0
 #define max_bound 15
 
-unittest(bound_int)
+unittest(min_bound_int)
 {
     int value = min_bound;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(min_bound, value);
+}
 
-    value = max_bound;
-    Utilities::bound(value, min_bound, max_bound);
-    assertEqual(max_bound, value);
-
-    value = 7;
-    Utilities::bound(value, min_bound, max_bound);
-    assertEqual(7, value);
-
-    value = -1;
-    Utilities::bound(value, min_bound, max_bound);
-    assertEqual(min_bound, value);
-
-    value = 16;
+unittest(max_bound_int)
+{
+    int value = max_bound;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(max_bound, value);
 }
 
-unittest(bound_byte)
+unittest(mid_bound_int)
 {
+    int value = 7;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEqual(7, value);
+}
 
+unittest(less_than_bound_int)
+{
+    int value = -1;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEqual(min_bound, value);
+}
+
+unittest(greater_than_bound_int)
+{
+    int value = 16;
+    Utilities::bound(value, min_bound, max_bound);
+    assertEqual(max_bound, value);
+}
+
+unittest(min_bound_byte)
+{
     byte value = min_bound;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(min_bound, value);
+}
 
-    value = max_bound;
+unittest(max_bound_byte)
+{
+    byte value = max_bound;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(max_bound, value);
+}
 
-    value = 4;
+unittest(mid_bound_byte)
+{
+    byte value = 7;
     Utilities::bound(value, min_bound, max_bound);
-    assertEqual(4, value);
+    assertEqual(7, value);
+}
 
-    value = -2;
+unittest(less_than_bound_byte)
+{
+    byte value = -1;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(min_bound, value);
+}
 
-    value = 20;
+unittest(greater_than_bound_byte)
+{
+    byte value = 16;
     Utilities::bound(value, min_bound, max_bound);
     assertEqual(max_bound, value);
 }
