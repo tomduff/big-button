@@ -45,12 +45,6 @@ void Track::setStep(int step, int value) {
   change = true;
 }
 
-void Track::updateStep(int position) {
-  bitWrite(track.pattern, position, !bitRead(track.pattern, position));
-  resetPattern();
-  change = true;
-}
-
 void Track::rotatePattern(int offset) {
 
   if (offset < track.length) {
