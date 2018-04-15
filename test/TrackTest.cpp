@@ -20,4 +20,24 @@ unittest(initialse)
   assertEqual(DividerType::Beat, track.getDividerType());
 }
 
+unittest(pattern_current_step)
+{
+  Track track = Track();
+  track.initialise();
+
+  track.setPattern(1);
+  assertEquals(1, track.getPattern());
+}
+
+unittest(pattern_next_step)
+{
+  Track track = Track();
+  track.initialise();
+
+  track.setNextPattern(1);
+  assertEquals(0, track.getPattern());
+  track.stepOn();
+  assertEquals(1, track.getPattern());
+}
+
 unittest_main()

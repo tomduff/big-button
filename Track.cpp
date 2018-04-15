@@ -27,6 +27,7 @@ void Track::clear() {
 void Track::clearPattern() {
   track.pattern = 0;
   resetPattern();
+  initialiseState();
   change = true;
 }
 
