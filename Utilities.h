@@ -29,13 +29,15 @@ class Utilities {
     // 0,1,2,3,3,2,1,0,0,1,2,3,3,2,1,0
     static bool reverse(int &value, int min, int max) {
       bool reversed = false;
-      if (value > max) {
-        value = max;
-        reversed = true;
-      } else if (value < min) {
-        value = min;
-        reversed = true;
+      while(value < min || value > max) {
+        if (value > max) {
+          value = (max + 1) - (value - max);
+          reversed = true;
+        } else if (value < min) {
+          value = (min - 1) + abs(min - value);
+          reversed = true;
+        }
+        return reversed;
       }
-      return reversed;
     }
 };
