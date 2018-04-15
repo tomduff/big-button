@@ -87,6 +87,7 @@ public:
   byte getPattern();
   byte getPosition();
   byte getDivider();
+  byte getDensity();
   byte getStep();
   byte getStepped();
   byte getMutation();

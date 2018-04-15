@@ -168,6 +168,10 @@ byte Track::getDivider() {
   return track.divider;
 }
 
+byte Track::getDensity() {
+  return track.density;
+}
+
 DividerType Track::getDividerType() {
   return track.dividerType;
 }
@@ -288,6 +292,7 @@ void Track::initialiseTrack() {
   track.offset = 0;
   track.divider = 0;
   track.shuffle = 0;
+  track.mutation = 0;
   track.play = PlayMode::Forward;
   track.out = OutMode::Trigger;
   track.patternType = PatternType::Programmed;

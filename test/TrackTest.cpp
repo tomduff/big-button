@@ -12,6 +12,8 @@ unittest(initialse)
   assertEqual(0, track.getOffset());
   assertEqual(0, track.getDivider());
   assertEqual(0, track.getShuffle());
+  assertEqual(0, track.getMutation());
+  assertEqual(0, track.getStep());
   assertEqual(PlayMode::Forward, track.getPlayMode());
   assertEqual(OutMode::Trigger, track.getOutMode());
   assertEqual(PatternType::Programmed, track.getPatternType());
