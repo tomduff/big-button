@@ -26,7 +26,7 @@ unittest(pattern_current_step)
   track.initialise();
 
   track.setPattern(1);
-  assertEquals(1, track.getPattern());
+  assertEqual(1, track.getPattern());
 }
 
 unittest(pattern_next_step)
@@ -35,9 +35,9 @@ unittest(pattern_next_step)
   track.initialise();
 
   track.setNextPattern(1);
-  assertEquals(0, track.getPattern());
+  assertEqual(0, track.getPattern());
   track.stepOn();
-  assertEquals(1, track.getPattern());
+  assertEqual(1, track.getPattern());
 }
 
 unittest_main()
