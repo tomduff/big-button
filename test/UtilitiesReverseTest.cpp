@@ -127,7 +127,7 @@ unittest(multi_reverse_past_max_with_non_zero_min_int)
     int max_bound = 15;
     int value = 31;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(13, value);
+    assertEqual(14, value);
     assertEqual(true, reversed);
 }
 
