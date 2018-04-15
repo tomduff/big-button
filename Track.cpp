@@ -11,17 +11,12 @@ Track::Track() {
 
 void Track::initialise() {
   // load();
-  clear();
+  initialiseTrack();
+  initialiseState();
 }
 
 void Track::reset() {
   initialiseState();
-}
-
-void Track::clear() {
-  initialiseTrack();
-  initialiseState();
-  change = true;
 }
 
 void Track::clearPattern() {
@@ -51,7 +46,7 @@ void Track::setLength(int length) {
     Utilities::bound(track.length, 1, MAX_STEPS);
     Utilities::bound(track.offset, 0, track.length - 1);
     Utilities::bound(track.density, 0, track.length - 1);
-    resetLength();
+    for(int step = track.length; step < MAX_STEPS; ++step) bitWrite(track.pattern, step, 0);
     resetPattern();
     change = true;
   }
@@ -82,7 +77,6 @@ void Track::nextPatternType() {
   ++mode;
   Utilities::cycle(mode, PatternType::Programmed, PatternType::Euclidean);
   track.patternType = (PatternType) mode;
-  resetLength();
   resetPattern();
   change = true;
 }
@@ -297,7 +291,6 @@ void Track::initialiseState() {
   state.forward = true;
   state.stepped = false;
   state.fill = false;
-  resetLength();
   resetDivision();
   resetPattern();
 }
@@ -313,12 +306,9 @@ void Track::resetPattern() {
   }
 }
 
-void Track::resetLength() {
-  state.length = track.length;
-}
-
 void Track::resetProgrammed() {
   state.pattern = 0;
+  state.length = track.length;
   int index = 0;
   for (int step = 0; step < track.length; ++step) {
     bitWrite(state.pattern, index, bitRead(track.pattern, step));

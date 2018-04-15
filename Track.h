@@ -63,9 +63,9 @@ struct TrackState {
 class Track {
 public:
   Track();
+  void reset();
   void initialise();
   void clearPattern();
-  void resetPattern();
   void setStep(int value);
   void setNextStep(int value);
   void setStep(int step, int value);
@@ -98,8 +98,6 @@ public:
   int getShuffle();
   void stepOn();
 //  void save();
-  void clear();
-  void reset();
 private:
   bool change = false;
   TrackDef track;
@@ -107,6 +105,7 @@ private:
   int stepOn(int current);
   void mutate();
 //  void load();
+  void resetPattern();
   void initialiseTrack();
   void initialiseState();
   void resetLength();

@@ -40,6 +40,57 @@ unittest(position_stepping) {
   assertEqual(0, track.getPosition());
 }
 
+unittest(reduce_length) {
+  int length = 8;
+  int reducedLength = 4;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  // Start at 0
+  assertEqual(0, track.getPosition());
+
+  // Step through the length
+  for (int step = 1; step < length; ++step) {
+    track.stepOn();
+    assertEqual(step, track.getPosition());
+  }
+  track.stepOn();
+  assertEqual(0, track.getPosition());
+
+  track.setLength(reducedLength);
+  for (int step = 1; step < reducedLength; ++step) {
+    track.stepOn();
+    assertEqual(step, track.getPosition());
+  }
+  track.stepOn();
+  assertEqual(0, track.getPosition());
+}
+
+unittest(increase_length) {
+  int length = 4;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  // Start at 0
+  assertEqual(0, track.getPosition());
+
+  // Step through the length
+  for (int step = 1; step < length; ++step) {
+    track.stepOn();
+    assertEqual(step, track.getPosition());
+  }
+
+  track.setLength(length + 2);
+
+  // And it now goes beyond the old length
+  track.stepOn();
+  assertEqual(length, track.getPosition());
+  track.stepOn();
+  assertEqual(length + 1, track.getPosition());
+}
+
 unittest(set_current_step) {
   Track track = Track();
   track.initialise();
@@ -126,7 +177,7 @@ unittest(offset_through_start_steps) {
   assertEqual(15, track.getOffset());
 
   // Step to end
-  for(int step =0; step < length - 1; ++step) track.stepOn();
+  for(int step = 1; step < length; ++step) track.stepOn();
   assertEqual(1, track.getStep());
 }
 
@@ -158,6 +209,31 @@ unittest(clearPattern) {
   assertNotEqual(0, track.getPattern());
   track.clearPattern();
   assertEqual(0, track.getPattern());
+}
+
+unittest(increase_length_new_sets_unset) {
+  int length = 8;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  for (int step = 1; step < length; ++step) {
+    track.setStep(1);
+    track.stepOn();
+  }
+
+  // Reduce and then increase length
+  track.setLength(length - 4);
+  track.setLength(length);
+  track.reset();
+
+  // Check steps inside the shorter step remain set
+  // and steps that were lost when shortened have been reset
+  for (int step = 1; step < length; ++step) {
+     if(step > length - 4) assertEqual(0, track.getStep());
+     else assertEqual(1, track.getStep());
+     track.stepOn();
+  }
 }
 
 unittest_main()
