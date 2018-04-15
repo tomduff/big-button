@@ -20,7 +20,7 @@ public:
   void reset();
 private:
   unsigned long gate;
-  byte beat;
+  int beat;
   ShuffleState state;
   Signal shuffleClock(int track, int shuffle);
   void newCycle();
