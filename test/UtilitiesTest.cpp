@@ -115,7 +115,7 @@ unittest(mid_bound_long)
     long max_bound = 150;
     long value = 83;
     Utilities::bound(value, min_bound, max_bound);
-    assertEqual(7, value);
+    assertEqual(83, value);
 }
 
 unittest(less_than_bound_long)
