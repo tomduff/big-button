@@ -79,7 +79,7 @@ unittest(rotate_one_step)
     track.stepOn();
   }
 
-  assertEqual(1, track.get;Step());
+  assertEqual(1, track.getStep());
   track.rotatePattern(1);
   assertEqual(0, track.getStep());
   track.stepOn();
