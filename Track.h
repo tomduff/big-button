@@ -69,7 +69,7 @@ public:
   void setStep(int value);
   void setNextStep(int value);
   void setStep(int step, int value);
-  void rotatePattern(int offset);
+  void offsetPattern(int offset);
   void setOffset(int offset);
   void setDensity(int density);
   void setLength(int length);

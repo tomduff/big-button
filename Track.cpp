@@ -45,7 +45,7 @@ void Track::setStep(int step, int value) {
   change = true;
 }
 
-void Track::rotatePattern(int offset) {
+void Track::offsetPattern(int offset) {
 
   if (offset < track.length) {
     int shift = offset - track.offset;

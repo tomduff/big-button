@@ -62,7 +62,7 @@ unittest(set_next_step)
   assertEqual(1, track.getStep());
 }
 
-unittest(rotate_one_step)
+unittest(offset_one_step)
 {
   int length = 16;
   Track track = Track();
@@ -74,19 +74,13 @@ unittest(rotate_one_step)
   // Step through the length
   for (int step = 1; step < length; ++step) {
     assertEqual(1, track.getStep());
-    track.rotatePattern(1);
+    track.offsetPattern(step);
     assertEqual(0, track.getStep());
     track.stepOn();
   }
-
-  assertEqual(1, track.getStep());
-  track.rotatePattern(1);
-  assertEqual(0, track.getStep());
-  track.stepOn();
-  assertEqual(1, track.getStep());
 }
 
-unittest(rotate_four_steps)
+unittest(offset_four_steps)
 {
   int length = 16;
   Track track = Track();
@@ -98,7 +92,7 @@ unittest(rotate_four_steps)
   // Step through the length
   for (int step = 1; step < length; step+=4) {
     assertEqual(1, track.getStep());
-    track.rotatePattern(4);
+    track.offsetPattern(step);
     assertEqual(0, track.getStep());
     track.stepOn();
     track.stepOn();
@@ -107,12 +101,38 @@ unittest(rotate_four_steps)
   }
 
   assertEqual(1, track.getStep());
-  track.rotatePattern(4);
-  assertEqual(0, track.getStep());
+}
+
+unittest(offset_through_length_steps)
+{
+  int length = 16;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  track.setStep(1);
+
+  // Offset to next step 16 + 1
+  track.offsetPattern(17); 
+  
   track.stepOn();
-  track.stepOn();
-  track.stepOn();
-  track.stepOn();
+  assertEqual(1, track.getStep());
+}
+
+unittest(offset_through_start_steps)
+{
+  int length = 16;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  track.setStep(1);
+
+  // Offset back to last step
+  track.offsetPattern(-1); 
+
+  // Step to end
+  for(int step =0; i < step - 1; ++) track.stepOn();
   assertEqual(1, track.getStep());
 }
 
