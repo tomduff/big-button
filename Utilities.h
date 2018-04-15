@@ -16,14 +16,14 @@ class Utilities {
     static void cycle(long &value, long min, long max) {
       while(value < min || value > max) {
         if (value < min ) value = (max + 1) + value;
-        else if (value > max) value = value - (max + 1);
+        else if (value > max) value = value - (max + 1) + min;
       }
     }
     // 0,1,2,3,0,1,2,3,0,1,2,3
     static void cycle(int &value, int min, int max) {
       while(value < min || value > max) {
         if (value < min ) value = (max + 1) + value;
-        else if (value > max) value = value - (max + 1);
+        else if (value > max) value = value - (max + 1) + min;;
       }
     }
     // 0,1,2,3,3,2,1,0,0,1,2,3,3,2,1,0

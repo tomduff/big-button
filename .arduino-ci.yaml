@@ -2,9 +2,7 @@ compile:
   libraries: ~
   platforms:
     - uno
-  compilers:
-    - g++
-
+    
 unittest:
   libraries: ~
   platforms:
