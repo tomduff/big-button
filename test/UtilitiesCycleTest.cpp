@@ -43,7 +43,7 @@ unittest(cycle_past_max_int)
     int max_bound = 15;
     int value = -5;
     Utilities::cycle(value, min_bound, max_bound);
-    assertEqual(4, value);
+    assertEqual(11, value);
 }
 
 unittest_main()
