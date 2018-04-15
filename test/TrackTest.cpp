@@ -27,7 +27,7 @@ unittest(position_stepping)
   track.initialise();
   track.setLength(length);
 
-  assert.equal(0, track.getPosition());
+  assertEqual(0, track.getPosition());
 
   for (int step = 0; step < length; ++step) {
     track.stepOn();
