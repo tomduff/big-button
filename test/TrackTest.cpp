@@ -70,14 +70,15 @@ unittest(offset_one_step)
   track.setLength(length);
 
   track.setStep(1);
+  assertEqual(1, track.getStep());
 
   // Step through the length
   for (int step = 1; step < length; ++step) {
-    assertEqual(1, track.getStep());
-    track.setOffset(step);
+    track.stepOn();
     assertEqual(step, track.getOffset());
     assertEqual(0, track.getStep());
-    track.stepOn();
+    track.setOffset(step);
+    assertEqual(1, track.getStep());
   }
 }
 
@@ -92,14 +93,14 @@ unittest(offset_four_steps)
 
   // Step through the length
   for (int step = 1; step < length; step+=4) {
-    assertEqual(1, track.getStep());
-    track.setOffset(step);
+    track.stepOn();
+    track.stepOn();
+    track.stepOn();
+    track.stepOn();
     assertEqual(step, track.getOffset());
     assertEqual(0, track.getStep());
-    track.stepOn();
-    track.stepOn();
-    track.stepOn();
-    track.stepOn();
+    track.setOffset(step);
+    assertEqual(1, track.getStep());
   }
 
   assertEqual(1, track.getStep());
@@ -113,10 +114,11 @@ unittest(offset_through_length_steps)
   track.setLength(length);
 
   track.setStep(1);
+  assertEqual(1, track.getOffset());
 
   // Offset to next step 16 + 1
   track.setOffset(17); 
-   assertEqual(1, track.getOffset());
+  assertEqual(0, track.getOffset());
 
   track.stepOn();
   assertEqual(1, track.getStep());
@@ -130,6 +132,7 @@ unittest(offset_through_start_steps)
   track.setLength(length);
 
   track.setStep(1);
+  assertEqual(1, track.getOffset());
 
   // Offset back to last step
   track.setOffset(-1); 
