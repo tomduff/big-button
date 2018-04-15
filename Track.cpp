@@ -172,6 +172,10 @@ byte Track::getDensity() {
   return track.density;
 }
 
+byte Track::getOffset() {
+  return track.density;
+}
+
 DividerType Track::getDividerType() {
   return track.dividerType;
 }
