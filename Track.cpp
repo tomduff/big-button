@@ -160,7 +160,7 @@ int Track::getDensity() {
 }
 
 int Track::getOffset() {
-  return track.density;
+  return track.offset;
 }
 
 DividerType Track::getDividerType() {

@@ -1,8 +1,7 @@
 #include <ArduinoUnitTests.h>
 #include "../Track.h"
 
-unittest(initialse)
-{
+unittest(initialse) {
   Track track = Track();
   track.initialise();
   
@@ -21,8 +20,7 @@ unittest(initialse)
   assertEqual(DividerType::Beat, track.getDividerType());
 }
 
-unittest(position_stepping)
-{
+unittest(position_stepping) {
   int length = 16;
   Track track = Track();
   track.initialise();
@@ -42,8 +40,7 @@ unittest(position_stepping)
   assertEqual(0, track.getPosition());
 }
 
-unittest(set_current_step)
-{
+unittest(set_current_step) {
   Track track = Track();
   track.initialise();
 
@@ -51,8 +48,7 @@ unittest(set_current_step)
   assertEqual(1, track.getStep());
 }
 
-unittest(set_next_step)
-{
+unittest(set_next_step) {
   Track track = Track();
   track.initialise();
 
@@ -62,8 +58,7 @@ unittest(set_next_step)
   assertEqual(1, track.getStep());
 }
 
-unittest(offset_one_step)
-{
+unittest(offset_one_step) {
   int length = 16;
   Track track = Track();
   track.initialise();
@@ -82,8 +77,7 @@ unittest(offset_one_step)
   }
 }
 
-unittest(offset_four_steps)
-{
+unittest(offset_four_steps) {
   int length = 16;
   Track track = Track();
   track.initialise();
@@ -106,8 +100,7 @@ unittest(offset_four_steps)
   assertEqual(1, track.getStep());
 }
 
-unittest(offset_through_length_steps)
-{
+unittest(offset_through_length_steps) {
   int length = 16;
   Track track = Track();
   track.initialise();
@@ -124,8 +117,7 @@ unittest(offset_through_length_steps)
   assertEqual(1, track.getStep());
 }
 
-unittest(offset_through_start_steps)
-{
+unittest(offset_through_start_steps) {
   int length = 16;
   Track track = Track();
   track.initialise();
