@@ -68,7 +68,7 @@ unittest(multi_cycle_past_non_zero_min_int)
 {
     int min_bound = 5;
     int max_bound = 10;
-    int value = 10;
+    int value = 20;
     Utilities::cycle(value, min_bound, max_bound);
     assertEqual(8, value);
 }
@@ -140,7 +140,7 @@ unittest(multi_cycle_past_non_zero_min_long)
 {
     long min_bound = 5;
     long max_bound = 10;
-    long value = 10;
+    long value = 20;
     Utilities::cycle(value, min_bound, max_bound);
     assertEqual(8, value);
 }

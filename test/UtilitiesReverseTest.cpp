@@ -8,7 +8,7 @@ unittest(no_reverse_int)
     int value = 1;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
     assertEqual(1, value);
-    assertEqual(flase, reversed);
+    assertEqual(false, reversed);
 }
 
 unittest(no_reverse_min_int)
@@ -18,7 +18,7 @@ unittest(no_reverse_min_int)
     int value = min_bound;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
     assertEqual(min_bound, value);
-    assertEqual(flase, reversed);
+    assertEqual(false, reversed);
 }
 
 unittest(no_reverse_max_int)
@@ -28,7 +28,7 @@ unittest(no_reverse_max_int)
     int value = max_bound;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
     assertEqual(max_bound, value);
-    assertEqual(flase, reversed);
+    assertEqual(false, reversed);
 }
 
 unittest(reverse_to_min_int)
