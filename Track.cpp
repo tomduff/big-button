@@ -45,17 +45,6 @@ void Track::setStep(int step, int value) {
   change = true;
 }
 
-void Track::offsetPattern(int offset) {
-
-  if (offset < track.length) {
-    int shift = offset - track.offset;
-    track.offset = offset < track.length ? offset : offset - track.length;
-    rotate(track.pattern, shift);
-    resetPattern();
-    change = true;
-  }
-}
-
 void Track::setLength(int length) {
   if (track.length != length) {
     track.length = length;
@@ -71,17 +60,20 @@ void Track::setLength(int length) {
 void Track::setDensity(int density) {
   if (track.density != track.density) {
     track.density = density;
-    Utilities::bound(track.density, 0, track.length);
+    Utilities::bound(track.density, 0, track.length -1);
     resetPattern();
     change = true;
   }
 }
 
 void Track::setOffset(int offset) {
-  track.offset += offset;
-  Utilities::cycle(track.offset, 0, track.length);
-  resetPattern();
-  change = true;
+  if(offset != track.offset) {
+    track.offset = offset;
+    Utilities::cycle(track.offset, 0, track.length - 1);
+    rotate(track.pattern, track.offset);
+    resetPattern();
+    change = true;
+  }
 }
 
 void Track::nextPatternType() {

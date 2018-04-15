@@ -127,7 +127,7 @@ void loop() {
 
   if (channelDial.read(0, TRACKS - 1)) active = channelDial.value();
   if (stepDial.read(1, MAX_STEPS)) track[active].setLength(stepDial.value());
-  if (shiftDial.read(0, track[active].getLength() - 1) ) track[active].offsetPattern(shiftDial.value());
+  if (shiftDial.read(0, track[active].getLength() - 1) ) track[active].setOffset(shiftDial.value());
 
   if (resetButton.isChanged() && resetButton.isClicked()) {
     for (index = 0; index < TRACKS; ++index) track[index].reset();

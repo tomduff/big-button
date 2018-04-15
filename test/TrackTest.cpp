@@ -75,6 +75,7 @@ unittest(offset_one_step)
   for (int step = 1; step < length; ++step) {
     assertEqual(1, track.getStep());
     track.offsetPattern(step);
+    assert.equals(step, track.getOffset());
     assertEqual(0, track.getStep());
     track.stepOn();
   }
@@ -93,6 +94,7 @@ unittest(offset_four_steps)
   for (int step = 1; step < length; step+=4) {
     assertEqual(1, track.getStep());
     track.offsetPattern(step);
+    assert.equals(step, track.getOffset());
     assertEqual(0, track.getStep());
     track.stepOn();
     track.stepOn();
@@ -114,6 +116,7 @@ unittest(offset_through_length_steps)
 
   // Offset to next step 16 + 1
   track.offsetPattern(17); 
+   assert.equals(1, track.getOffset());
 
   track.stepOn();
   assertEqual(1, track.getStep());
@@ -130,6 +133,7 @@ unittest(offset_through_start_steps)
 
   // Offset back to last step
   track.offsetPattern(-1); 
+  assert.equals(15, track.getOffset());
 
   // Step to end
   for(int step =0; step < length - 1; ++step) track.stepOn();
