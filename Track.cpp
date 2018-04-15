@@ -68,9 +68,10 @@ void Track::setDensity(int density) {
 
 void Track::setOffset(int offset) {
   if(offset != track.offset) {
+    Utilities::cycle(offset, 0, track.length - 1);
+    int shift = offset - track.offset;
+    rotate(track.pattern, shift);
     track.offset = offset;
-    Utilities::cycle(track.offset, 0, track.length - 1);
-    rotate(track.pattern, track.offset);
     resetPattern();
     change = true;
   }
