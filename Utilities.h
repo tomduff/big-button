@@ -19,7 +19,7 @@ class Utilities {
       else if (value > max) value = value - max;
     }
     static void cycle(int &value, int min, int max) {
-      if (value < min ) value = (max + 1)x + value;
+      if (value < min ) value = (max + 1) + value;
       else if (value > max) value = value - (max + 1);
     }
     static bool reverse(byte &value, byte min, byte max) {
