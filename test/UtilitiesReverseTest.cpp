@@ -71,23 +71,23 @@ unittest(reverse_past_max_int)
     assertEqual(true, reversed);
 }
 
-unittest(reverse_back_forwards_past_min_int)
+unittest(reverse_back_to_forwards_past_min_int)
 {
     int min_bound = 0;
     int max_bound = 15;
     int value = -19;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(12, value);
+    assertEqual(13, value);
     assertEqual(false, reversed);
 }
 
-unittest(reverse_back_forwards_past_max_int)
+unittest(reverse_back_to_forwards_past_max_int)
 {
     int min_bound = 0;
     int max_bound = 15;
     int value = 34;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(3, value);
+    assertEqual(2, value);
     assertEqual(false, reversed);
 }
 
@@ -97,38 +97,38 @@ unittest(multi_reverse_past_min_int)
     int max_bound = 15;
     int value = -44;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(12, value);
-    assertEqual(true, reversed);
+    assertEqual(11, value);
+    assertEqual(false, reversed);
 }
 
 unittest(multi_reverse_past_max_int)
 {
     int min_bound = 0;
     int max_bound = 15;
-    int value = 51;
+    int value = 66;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(12, value);
+    assertEqual(2, value);
     assertEqual(true, reversed);
 }
 
 unittest(multi_reverse_past_min_with_non_zero_min_int)
 {
-    int min_bound = 0;
+    int min_bound = 7;
     int max_bound = 15;
-    int value = -44;
+    int value = -5;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(12, value);
+    assertEqual(13, value);
     assertEqual(true, reversed);
 }
 
 unittest(multi_reverse_past_max_with_non_zero_min_int)
 {
-    int min_bound = 0;
+    int min_bound = 9;
     int max_bound = 15;
-    int value = 51;
+    int value = 31;
     bool reversed = Utilities::reverse(value, min_bound, max_bound);
-    assertEqual(12, value);
-    assertEqual(true, reversed);
+    assertEqual(13, value);
+    assertEqual(false, reversed);
 }
 
 unittest_main()
