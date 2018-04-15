@@ -130,4 +130,34 @@ unittest(offset_through_start_steps) {
   assertEqual(1, track.getStep());
 }
 
+unittest(reset) {
+  Track track = Track();
+  track.initialise();
+
+  track.stepOn();
+  track.stepOn();
+  track.stepOn();
+  track.stepOn();
+  track.stepOn();
+
+  assertEqual(5, track.getPosition());
+
+  track.reset();
+
+  assertEqual(0, track.getPosition());
+}
+
+unittest(clearPattern) {
+  int length = 16;
+  Track track = Track();
+  track.initialise();
+
+  track.setStep(1);
+  track.setNextStep(1);
+
+  assertNotEqual(0, track.getPattern());
+  track.clearPattern();
+  assertEqual(0, track.getPattern());
+}
+
 unittest_main()
