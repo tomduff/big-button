@@ -40,4 +40,18 @@ class Utilities {
       }
       return reversed;
     }
+    // 0,1,2,3,3,2,1,0,0,1,2,3,3,2,1,0
+    static bool reverse(long &value, long min, long max) {
+      bool reversed = false;
+      while(value < min || value > max) {
+        if (value > max) {
+          value = (max + 1) - (value - max);
+          reversed = !reversed;
+        } else if (value < min) {
+          value = (min - 1) + abs(min - value);
+          reversed = !reversed;
+        }
+      }
+      return reversed;
+    }
 };

@@ -131,4 +131,134 @@ unittest(multi_reverse_past_max_with_non_zero_min_int)
     assertEqual(true, reversed);
 }
 
+unittest(no_reverse_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = 1;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(1, value);
+    assertEqual(false, reversed);
+}
+
+unittest(no_reverse_min_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = min_bound;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(min_bound, value);
+    assertEqual(false, reversed);
+}
+
+unittest(no_reverse_max_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = max_bound;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(max_bound, value);
+    assertEqual(false, reversed);
+}
+
+unittest(reverse_to_min_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = -1;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(0, value);
+    assertEqual(true, reversed);
+}
+
+unittest(reverse_to_max_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = 16;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(15, value);
+    assertEqual(true, reversed);
+}
+
+unittest(reverse_past_min_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = -5;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(4, value);
+    assertEqual(true, reversed);
+}
+
+unittest(reverse_past_max_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = 20;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(11, value);
+    assertEqual(true, reversed);
+}
+
+unittest(reverse_back_to_forwards_past_min_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = -19;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(13, value);
+    assertEqual(false, reversed);
+}
+
+unittest(reverse_back_to_forwards_past_max_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = 34;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(2, value);
+    assertEqual(false, reversed);
+}
+
+unittest(multi_reverse_past_min_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = -44;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(11, value);
+    assertEqual(true, reversed);
+}
+
+unittest(multi_reverse_past_max_long)
+{
+    long min_bound = 0;
+    long max_bound = 15;
+    long value = 66;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(2, value);
+    assertEqual(false, reversed);
+}
+
+unittest(multi_reverse_past_min_with_non_zero_min_long)
+{
+    long min_bound = 7;
+    long max_bound = 15;
+    long value = -5;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(13, value);
+    assertEqual(false, reversed);
+}
+
+unittest(multi_reverse_past_max_with_non_zero_min_long)
+{
+    long min_bound = 9;
+    long max_bound = 15;
+    long value = 31;
+    bool reversed = Utilities::reverse(value, min_bound, max_bound);
+    assertEqual(14, value);
+    assertEqual(true, reversed);
+}
+
 unittest_main()
