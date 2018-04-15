@@ -141,10 +141,15 @@ void loop() {
 
   if (bigButton.isChanged() && bigButton.isClicked()) {
     // Quantize to nearest beat
-    if (now - lastClock < duration / 2) track[active].setPattern(HIGH);
-    else track[active].setNextPattern(HIGH);
+    if (now - lastClock < duration / 2) track[active].setStep(HIGH);
+    else track[active].setNextStep(HIGH);
   }
-  if (deleteButton.isChanged() && deleteButton.isClicked()) track[active].setPattern(LOW);
+  
+  if (deleteButton.isChanged() && deleteButton.isClicked()) {
+    // Quantize to nearest beat
+    if (now - lastClock < duration / 2) track[active].setStep(LOW);
+    else track[active].setNextStep(LOW);
+  }
 
   if (fillButton.isChanged()) track[active].setFill(fillButton.isClicked());
 }

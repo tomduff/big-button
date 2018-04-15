@@ -31,21 +31,21 @@ void Track::clearPattern() {
   change = true;
 }
 
-void Track::setPattern(int value) {
-  setPattern(state.position, value);
+void Track::setStep(int value) {
+  setStep(state.position, value);
 }
 
-void Track::setNextPattern(int value) {
-  setPattern(stepOn(state.position), value);
+void Track::setNextStep(int value) {
+  setStep(stepOn(state.position), value);
 }
 
-void Track::setPattern(int step, int value) {
+void Track::setStep(int step, int value) {
   bitWrite(track.pattern, step, value);
   resetPattern();
   change = true;
 }
 
-void Track::updatePattern(int position) {
+void Track::updateStep(int position) {
   bitWrite(track.pattern, position, !bitRead(track.pattern, position));
   resetPattern();
   change = true;

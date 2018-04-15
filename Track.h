@@ -66,10 +66,10 @@ public:
   void initialise();
   void clearPattern();
   void resetPattern();
-  void setPattern(int value);
-  void setNextPattern(int value);
-  void setPattern(int step, int value);
-  void updatePattern(int position);
+  void setStep(int value);
+  void setNextStep(int value);
+  void setStep(int step, int value);
+  void updateStep(int position);
   void rotatePattern(int offset);
   void setOffset(int offset);
   void setDensity(int density);

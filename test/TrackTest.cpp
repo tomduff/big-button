@@ -28,7 +28,7 @@ unittest(position_stepping)
   track.setLength(length);
 
   assert.equal(0, track.getPosition());
-  
+
   for (int step = 0; step < length; ++step) {
     track.stepOn();
     assertEqual(step, track.getPosition());
@@ -43,8 +43,8 @@ unittest(pattern_current_step)
   Track track = Track();
   track.initialise();
 
-  track.setPattern(1);
-  assertEqual(1, track.getPattern());
+  track.setStep(1);
+  assertEqual(1, track.getStep());
 }
 
 unittest(pattern_next_step)
@@ -52,10 +52,10 @@ unittest(pattern_next_step)
   Track track = Track();
   track.initialise();
 
-  track.setNextPattern(1);
-  assertEqual(0, track.getPattern());
+  track.setNextStep(1);
+  assertEqual(0, track.getStep());
   track.stepOn();
-  assertEqual(1, track.getPattern());
+  assertEqual(1, track.getStep());
 }
 
 unittest_main()
