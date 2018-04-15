@@ -20,6 +20,24 @@ unittest(initialse)
   assertEqual(DividerType::Beat, track.getDividerType());
 }
 
+unittest(position_stepping)
+{
+  int length = 16;
+  Track track = Track();
+  track.initialise();
+  track.setLength(length);
+
+  assert.equal(0, track.getPosition());
+  
+  for (int step = 0; step < length; ++step) {
+    track.stepOn();
+    assertEqual(step, track.getPosition());
+  }
+
+  track.stepOn();
+  assertEqual(0, track.getPosition());
+}
+
 unittest(pattern_current_step)
 {
   Track track = Track();
