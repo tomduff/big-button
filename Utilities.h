@@ -32,12 +32,12 @@ class Utilities {
       while(value < min || value > max) {
         if (value > max) {
           value = (max + 1) - (value - max);
-          reversed = true;
+          reversed = !reversed;
         } else if (value < min) {
           value = (min - 1) + abs(min - value);
-          reversed = true;
+          reversed = !reversed;
         }
-        return reversed;
       }
+      return reversed;
     }
 };
