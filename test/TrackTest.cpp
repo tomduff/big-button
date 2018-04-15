@@ -84,11 +84,12 @@ unittest(offset_four_steps) {
   track.setLength(length);
 
   track.setStep(1);
+  assertEqual(1, track.getStep());
+  track.stepOn();
+  track.stepOn();
+  track.stepOn();
+  track.stepOn();
   assertEqual(0, track.getStep());
-  track.stepOn();
-  track.stepOn();
-  track.stepOn();
-  track.stepOn();
   track.setOffset(4);
   assertEqual(4, track.getOffset());
   assertEqual(1, track.getStep());
