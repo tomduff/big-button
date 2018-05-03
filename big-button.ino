@@ -136,7 +136,7 @@ void loop() {
 
   if (clearButton.isChanged()) {
     if (clearButton.isClicked()) track[active].clearPattern(); // Just dump the recorded pattern
-    if (clearButton.isHeld()) track[active].clear(); // Dump all track set up
+    if (clearButton.isHeld()) track[active].initialise(); // Dump all track set up
   }
 
   if (bigButton.isChanged() && bigButton.isClicked()) {
